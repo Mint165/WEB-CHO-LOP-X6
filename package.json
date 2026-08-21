@@ -1,0 +1,17 @@
+{
+  "name": "so-do-lop-hoc",
+  "version": "1.0.0",
+  "description": "Ứng dụng web xếp sơ đồ lớp học kéo thả và xuất ảnh",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -l 3000",
+    "dev": "npx serve -l 3000"
+  },
+  "keywords": [
+    "seating-chart",
+    "classroom",
+    "drag-and-drop"
+  ],
+  "author": "Mint165",
+  "license": "MIT"
+}
