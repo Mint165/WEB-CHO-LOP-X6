@@ -692,3 +692,143 @@ body {
     border: 2px dashed var(--primary);
     border-radius: var(--radius-md);
 }
+
+/* ==========================================================================
+   Print Stylesheet (Khổ giấy A4 Ngang - Vừa vặn 1 trang)
+   ========================================================================== */
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 5mm 8mm;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    html, body {
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+    }
+
+    /* Ẩn các thanh công cụ, sidebar, modals khi in */
+    .app-header, 
+    .sidebar, 
+    .modal,
+    .btn-remove-seat, 
+    .btn-lock-seat {
+        display: none !important;
+    }
+
+    .main-content {
+        display: block !important;
+        overflow: visible !important;
+    }
+
+    .canvas-area {
+        padding: 0 !important;
+        background: #ffffff !important;
+        display: block !important;
+        overflow: visible !important;
+    }
+
+    .seating-wrapper {
+        box-shadow: none !important;
+        padding: 10px 15px 15px 15px !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        border-radius: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .seating-header {
+        margin-bottom: 20px !important;
+    }
+
+    .seating-header h1 {
+        font-size: 1.25rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .chart-teacher-info {
+        font-size: 0.9rem !important;
+    }
+
+    .grid-container {
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 20px !important;
+        margin-bottom: 25px !important;
+    }
+
+    .col-group {
+        width: 22.5% !important;
+    }
+
+    .desk-row {
+        height: 54px !important;
+        border-color: #000000 !important;
+    }
+
+    .seat {
+        border-color: #000000 !important;
+        padding: 2px !important;
+    }
+
+    .student-name-text {
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+    }
+
+    .student-role-text {
+        font-size: 0.65rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* Bảng đen và bàn giáo viên khi in */
+    .front-room {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding-top: 20px !important;
+        position: relative !important;
+        width: 100% !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .blackboard-wrapper {
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    .blackboard {
+        border: 1.5px solid #000000 !important;
+        padding: 10px 50px !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+    }
+
+    .teacher-desk-wrapper {
+        position: absolute !important;
+        right: 0 !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+    }
+
+    .teacher-desk {
+        border: 1.5px solid #000000 !important;
+        border-radius: 6px !important;
+        padding: 10px 18px !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+    }
+}

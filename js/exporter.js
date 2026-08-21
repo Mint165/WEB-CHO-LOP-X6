@@ -50,50 +50,10 @@ class ExporterManager {
     }
 
     print() {
-        // Clone the capture area
-        const printArea = this.captureArea.cloneNode(true);
-
-        // Strip action buttons in print view
-        printArea.querySelectorAll('.btn-remove-seat, .btn-lock-seat').forEach(btn => btn.remove());
-
-        // Create a clean print environment
-        const printWindow = window.open('', '', 'width=900,height=650');
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>In Sơ Đồ Lớp</title>
-                <link rel="stylesheet" href="css/style.css">
-                <style>
-                    body {
-                        background: white;
-                        margin: 0;
-                        padding: 20px;
-                        display: flex;
-                        justify-content: center;
-                    }
-                    .seating-wrapper {
-                        box-shadow: none;
-                        padding: 0;
-                        width: 100%;
-                        min-width: auto;
-                    }
-                    @page {
-                        size: landscape;
-                        margin: 1cm;
-                    }
-                </style>
-            </head>
-            <body>
-                ${printArea.outerHTML}
-                <script>
-                    setTimeout(() => {
-                        window.print();
-                        window.close();
-                    }, 500);
-                </script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
+        this.captureArea.classList.add('is-exporting');
+        window.print();
+        setTimeout(() => {
+            this.captureArea.classList.remove('is-exporting');
+        }, 500);
     }
 }
