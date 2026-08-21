@@ -352,58 +352,64 @@ body {
     display: none !important;
 }
 
+/* Seating Chart Header (Export & View) */
+.seating-header {
+    text-align: center;
+    margin-bottom: 35px;
+    color: #000;
+}
+.seating-header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+}
+.chart-teacher-info {
+    font-size: 1rem;
+    font-style: italic;
+    color: #111;
+}
+
 /* Front Room (Board & Teacher) */
 .front-room {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding-top: 20px;
+    justify-content: center; /* Căn giữa chính xác ô bảng đen */
+    align-items: center;
+    padding-top: 35px;
     position: relative;
+    width: 100%;
 }
 
 .blackboard-wrapper {
-    flex: 1;
     display: flex;
     justify-content: center;
-    padding-left: 15%; /* Push it slightly towards center from left */
+    align-items: center;
 }
 
 .blackboard {
     border: 1px solid var(--desk-border);
-    padding: 15px 60px;
+    padding: 14px 70px;
     font-weight: 700;
     font-size: 1rem;
     text-align: center;
+    background: #ffffff;
 }
 
 .teacher-desk-wrapper {
     position: absolute;
     right: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .teacher-desk {
     border: 1px solid var(--desk-border);
-    border-radius: 8px; /* Rounded corners for teacher desk */
-    padding: 15px 25px;
+    border-radius: 8px; /* Bo tròn góc cho bàn giáo viên */
+    padding: 14px 24px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.95rem;
     text-align: center;
-}
-
-/* Export specific styles */
-.export-header {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #000;
-}
-.export-header h1 {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 5px;
-}
-.export-header h2 {
-    font-size: 16px;
-    font-weight: 500;
+    background: #ffffff;
 }
 
 /* ==========================================================================

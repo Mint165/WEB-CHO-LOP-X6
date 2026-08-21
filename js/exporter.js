@@ -14,33 +14,23 @@ class ExporterManager {
         }
 
         try {
-            // Prepare for capture
-            const exportHeader = document.querySelector('.export-header');
-            const classTitleInput = document.getElementById('class-title').innerText;
-            const classSubtitleInput = document.getElementById('class-subtitle').innerText;
-            
-            document.getElementById('export-title').innerText = classTitleInput;
-            document.getElementById('export-subtitle').innerText = classSubtitleInput;
-            
-            // Show header inside capture area
-            exportHeader.style.display = 'block';
+            const chartTitle = document.getElementById('chart-main-title') ? document.getElementById('chart-main-title').innerText : 'So_Do_Lop';
             this.captureArea.classList.add('is-exporting');
 
             // Add slight padding to capture area temporarily for better image framing
             const originalPadding = this.captureArea.style.padding;
-            this.captureArea.style.padding = '60px';
+            this.captureArea.style.padding = '50px 40px';
 
-            // Capture
+            // Capture with html2canvas
             const canvas = await html2canvas(this.captureArea, {
-                scale: 2, // High resolution
+                scale: 2.5, // Ultra High resolution
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 logging: false,
-                windowWidth: 1200 // Ensure a consistent width
+                windowWidth: 1200
             });
 
             // Revert changes
-            exportHeader.style.display = 'none';
             this.captureArea.classList.remove('is-exporting');
             this.captureArea.style.padding = originalPadding;
 
@@ -48,7 +38,8 @@ class ExporterManager {
             const imageStr = canvas.toDataURL("image/png");
             const a = document.createElement('a');
             a.href = imageStr;
-            a.download = `SoDoLop_${classTitleInput.replace(/\s+/g, '_')}.png`;
+            const safeName = chartTitle.replace(/[^a-zA-Z0-9\u00C0-\u024F\u1EA0-\u1EF9]/g, '_').substring(0, 50);
+            a.download = `${safeName || 'SoDoLop'}.png`;
             a.click();
             
         } catch (error) {
@@ -59,19 +50,8 @@ class ExporterManager {
     }
 
     print() {
-        const classTitleInput = document.getElementById('class-title').innerText;
-        const classSubtitleInput = document.getElementById('class-subtitle').innerText;
-        
-        // Use a simple window.print approach with a special print stylesheet logic injected
-        const originalContent = document.body.innerHTML;
-        
         // Clone the capture area
         const printArea = this.captureArea.cloneNode(true);
-        
-        // Make the header visible in print
-        printArea.querySelector('.export-header').style.display = 'block';
-        printArea.querySelector('#export-title').innerText = classTitleInput;
-        printArea.querySelector('#export-subtitle').innerText = classSubtitleInput;
 
         // Strip action buttons in print view
         printArea.querySelectorAll('.btn-remove-seat, .btn-lock-seat').forEach(btn => btn.remove());

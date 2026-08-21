@@ -18,8 +18,7 @@
         <!-- HEADER / TOOLBAR -->
         <header class="app-header">
             <div class="header-left">
-                <h1><i class="fa-solid fa-school"></i> <span id="class-title" contenteditable="true">SƠ ĐỒ LỚP HỌC</span></h1>
-                <p class="subtitle" id="class-subtitle" contenteditable="true">NĂM HỌC 2025 - 2026</p>
+                <h1><i class="fa-solid fa-school"></i> <span>Quản Lý Sơ Đồ Lớp</span></h1>
             </div>
             <div class="header-right">
                 <button id="btn-randomize" class="btn btn-secondary" title="Xáo trộn ngẫu nhiên"><i class="fa-solid fa-dice"></i> Xáo trộn</button>
@@ -35,9 +34,10 @@
             <!-- CANVAS AREA (Seating Grid) -->
             <main class="canvas-area">
                 <div class="seating-wrapper" id="capture-area">
-                    <div class="export-header" style="display: none;">
-                        <h1 id="export-title">SƠ ĐỒ LỚP HỌC</h1>
-                        <h2 id="export-subtitle">Năm học 2025 - 2026</h2>
+                    <!-- Sơ đồ Header (Đúng mẫu ảnh mới) -->
+                    <div class="seating-header">
+                        <h1 id="chart-main-title" contenteditable="true" title="Bấm vào để chỉnh sửa tiêu đề">SƠ ĐỒ LỚP 12/6 – Năm học 2026 - 2027</h1>
+                        <p id="chart-teacher-info" class="chart-teacher-info" contenteditable="true" title="Bấm vào để chỉnh sửa thông tin GVCN"><i>Giáo viên chủ nhiệm: Trần Dương Anh Tú (0983 456 457)</i></p>
                     </div>
                     
                     <div class="grid-container" id="grid-container">

@@ -185,6 +185,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 7. Load and save chart header title
+    const mainTitleEl = document.getElementById('chart-main-title');
+    const teacherInfoEl = document.getElementById('chart-teacher-info');
+
+    const savedTitle = localStorage.getItem('seatingChartTitle_v2');
+    const savedTeacher = localStorage.getItem('seatingChartTeacher_v2');
+    if (savedTitle && mainTitleEl) mainTitleEl.innerHTML = savedTitle;
+    if (savedTeacher && teacherInfoEl) teacherInfoEl.innerHTML = savedTeacher;
+
+    if (mainTitleEl) {
+        mainTitleEl.addEventListener('blur', () => {
+            localStorage.setItem('seatingChartTitle_v2', mainTitleEl.innerHTML);
+        });
+    }
+    if (teacherInfoEl) {
+        teacherInfoEl.addEventListener('blur', () => {
+            localStorage.setItem('seatingChartTeacher_v2', teacherInfoEl.innerHTML);
+        });
+    }
+
     // Initial render
     renderAll();
 });
