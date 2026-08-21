@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ Đồ Lớp Học</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER / TOOLBAR -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1><i class="fa-solid fa-school"></i> <span id="class-title" contenteditable="true">SƠ ĐỒ LỚP HỌC</span></h1>
+                <p class="subtitle" id="class-subtitle" contenteditable="true">NĂM HỌC 2025 - 2026</p>
+            </div>
+            <div class="header-right">
+                <button id="btn-randomize" class="btn btn-secondary" title="Xáo trộn ngẫu nhiên"><i class="fa-solid fa-dice"></i> Xáo trộn</button>
+                <button id="btn-rotate" class="btn btn-secondary" title="Đảo vị trí các dãy (1->2->3->4->1)"><i class="fa-solid fa-arrows-rotate"></i> Đảo Dãy</button>
+                <button id="btn-clear" class="btn btn-danger" title="Xóa sơ đồ hiện tại"><i class="fa-solid fa-trash-can"></i> Làm mới</button>
+                <div class="separator"></div>
+                <button id="btn-export-img" class="btn btn-primary"><i class="fa-solid fa-image"></i> Xuất Ảnh</button>
+                <button id="btn-print" class="btn btn-primary"><i class="fa-solid fa-print"></i> In</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- CANVAS AREA (Seating Grid) -->
+            <main class="canvas-area">
+                <div class="seating-wrapper" id="capture-area">
+                    <div class="export-header" style="display: none;">
+                        <h1 id="export-title">SƠ ĐỒ LỚP HỌC</h1>
+                        <h2 id="export-subtitle">Năm học 2025 - 2026</h2>
+                    </div>
+                    
+                    <div class="grid-container" id="grid-container">
+                        <!-- Columns will be injected by JS -->
+                    </div>
+                    
+                    <div class="front-room">
+                        <div class="blackboard-wrapper">
+                            <div class="blackboard">BẢNG ĐEN</div>
+                        </div>
+                        <div class="teacher-desk-wrapper">
+                            <div class="teacher-desk">BÀN GIÁO VIÊN</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- RIGHT SIDEBAR (Student List) -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Danh sách chờ</h2>
+                    <div class="student-stats">
+                        Đã xếp: <span id="stat-assigned">0</span> / <span id="stat-total">0</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-actions">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-input" placeholder="Tìm kiếm học sinh...">
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-add-student" class="btn btn-sm btn-outline"><i class="fa-solid fa-plus"></i> Thêm</button>
+                        <button id="btn-import-bulk" class="btn btn-sm btn-outline"><i class="fa-solid fa-file-import"></i> Nhập DS</button>
+                    </div>
+                </div>
+
+                <div class="unassigned-list-wrapper">
+                    <ul class="unassigned-list" id="unassigned-list">
+                        <!-- Unassigned students injected here -->
+                    </ul>
+                    <div class="empty-state" id="empty-state" style="display: none;">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <p>Tất cả đã có chỗ</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Add Student Modal -->
+    <div id="modal-add-student" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Thêm Học Sinh</h2>
+            <div class="form-group">
+                <label>Họ và Tên</label>
+                <input type="text" id="input-student-name" placeholder="VD: Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+                <label>Chức vụ (Tuỳ chọn)</label>
+                <input type="text" id="input-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
+            </div>
+            <button id="btn-save-student" class="btn btn-primary w-100">Lưu</button>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div id="modal-edit-student" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Chỉnh Sửa Học Sinh</h2>
+            <input type="hidden" id="edit-student-id">
+            <div class="form-group">
+                <label>Họ và Tên</label>
+                <input type="text" id="edit-student-name" placeholder="VD: Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+                <label>Chức vụ (Tuỳ chọn)</label>
+                <input type="text" id="edit-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
+            </div>
+            <button id="btn-update-student" class="btn btn-primary w-100"><i class="fa-solid fa-check"></i> Cập nhật</button>
+        </div>
+    </div>
+
+    <!-- Bulk Import Modal -->
+    <div id="modal-import" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-modal">&times;</span>
+            <h2>Nhập Danh Sách Nhanh</h2>
+            <p class="modal-help">Dán danh sách học sinh từ Excel hoặc Word (mỗi học sinh 1 dòng).<br>Để thêm chức vụ, dùng dấu phẩy (VD: <i>Nguyễn Văn A, Lớp Trưởng</i>).</p>
+            <textarea id="input-bulk-data" rows="10" placeholder="Nguyễn Văn A&#10;Trần Thị B, LPHT&#10;Lê Văn C"></textarea>
+            <button id="btn-save-bulk" class="btn btn-primary w-100">Nhập danh sách</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- html2canvas for image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/sampleData.js"></script>
+    <script src="js/studentManager.js"></script>
+    <script src="js/seatingGrid.js"></script>
+    <script src="js/dragdrop.js"></script>
+    <script src="js/exporter.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
