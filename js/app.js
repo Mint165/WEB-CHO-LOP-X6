@@ -1,7 +1,83 @@
 /**
  * Main Application Logic
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load Supabase on demand so this integration does not require editing the HTML shell.
+    if (!window.supabase) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('Không thể tải Supabase'));
+            document.head.appendChild(script);
+        });
+    }
+
+    window.supabaseClient = window.supabaseClient || window.supabase.createClient(
+        'https://uiovckfbifsuswevfnir.supabase.co',
+        'sb_publishable_iGzyoOJ2aqSxeL9pNRCYUw_R9T3XBrn',
+        { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+    );
+    const supabaseClient = window.supabaseClient;
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+        const appContainer = document.querySelector('.app-container');
+        appContainer.hidden = true;
+        const gate = document.createElement('section');
+        gate.id = 'auth-gate';
+        gate.style.cssText = 'min-height:100vh;display:grid;place-items:center;padding:24px;background:#f1f5f9';
+        gate.innerHTML = `
+            <form id="auth-form" style="width:min(100%,400px);padding:28px;background:#fff;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.15)">
+                <h1 style="margin:0 0 8px">Sơ đồ lớp 12/6</h1>
+                <p style="margin:0 0 18px;color:#475569">Đăng nhập để đồng bộ dữ liệu giữa các thiết bị.</p>
+                <label>Email<input id="auth-email" type="email" required autocomplete="email" style="display:block;width:100%;margin:6px 0 14px;padding:10px;box-sizing:border-box"></label>
+                <label>Mật khẩu<input id="auth-password" type="password" required minlength="6" autocomplete="current-password" style="display:block;width:100%;margin:6px 0 14px;padding:10px;box-sizing:border-box"></label>
+                <button id="auth-submit" class="btn btn-primary w-100" type="submit">Đăng nhập</button>
+                <button id="auth-toggle" type="button" style="margin:14px auto 0;display:block;border:0;background:transparent;color:#4f46e5;cursor:pointer">Chưa có tài khoản? Tạo tài khoản</button>
+                <p id="auth-message" aria-live="polite" style="min-height:1.25em;margin:14px 0 0;color:#b91c1c"></p>
+            </form>`;
+        document.body.prepend(gate);
+        let signUpMode = false;
+        const form = gate.querySelector('#auth-form');
+        const submit = gate.querySelector('#auth-submit');
+        const toggle = gate.querySelector('#auth-toggle');
+        const message = gate.querySelector('#auth-message');
+        toggle.addEventListener('click', () => {
+            signUpMode = !signUpMode;
+            submit.textContent = signUpMode ? 'Tạo tài khoản' : 'Đăng nhập';
+            toggle.textContent = signUpMode ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Tạo tài khoản';
+            message.textContent = '';
+        });
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const email = gate.querySelector('#auth-email').value.trim();
+            const password = gate.querySelector('#auth-password').value;
+            if (password.length < 6) { message.textContent = 'Mật khẩu cần có ít nhất 6 ký tự.'; return; }
+            submit.disabled = true;
+            const result = signUpMode
+                ? await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
+                : await supabaseClient.auth.signInWithPassword({ email, password });
+            submit.disabled = false;
+            if (result.error) { message.textContent = result.error.message; return; }
+            if (signUpMode && !result.data.session) { message.textContent = 'Hãy xác nhận email, sau đó đăng nhập lại.'; return; }
+            window.location.reload();
+        });
+        return;
+    }
+
+    const headerActions = document.querySelector('.header-right');
+    if (headerActions && !document.getElementById('btn-sign-out')) {
+        const signOut = document.createElement('button');
+        signOut.id = 'btn-sign-out';
+        signOut.className = 'btn btn-secondary';
+        signOut.textContent = 'Đăng xuất';
+        signOut.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        });
+        headerActions.prepend(signOut);
+    }
     // 1. Initialize Managers
     const studentManager = new StudentManager(typeof sampleStudents !== 'undefined' ? sampleStudents : []);
     studentManager.init();
@@ -314,26 +390,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 7. Load and save chart header title
+    // 7. Load, save and mirror the common classroom heading through Supabase.
     const mainTitleEl = document.getElementById('chart-main-title');
     const teacherInfoEl = document.getElementById('chart-teacher-info');
-
-    const savedTitle = localStorage.getItem('seatingChartTitle_v2');
-    const savedTeacher = localStorage.getItem('seatingChartTeacher_v2');
-    if (savedTitle && mainTitleEl) mainTitleEl.innerHTML = savedTitle;
-    if (savedTeacher && teacherInfoEl) teacherInfoEl.innerHTML = savedTeacher;
-
-    if (mainTitleEl) {
-        mainTitleEl.addEventListener('blur', () => {
-            localStorage.setItem('seatingChartTitle_v2', mainTitleEl.innerHTML);
-        });
-    }
-    if (teacherInfoEl) {
-        teacherInfoEl.addEventListener('blur', () => {
-            localStorage.setItem('seatingChartTeacher_v2', teacherInfoEl.innerHTML);
-        });
-    }
-
+    const applyClassroomSettings = (settings) => {
+        if (!settings) return;
+        mainTitleEl.textContent = settings.title;
+        teacherInfoEl.textContent = settings.teacher_info;
+    };
+    const loadClassroomSettings = async () => {
+        const { data, error } = await supabaseClient.from('classroom_settings').select('*').eq('id', 'lop-x6').single();
+        if (error) return console.error('Không thể tải thông tin lớp:', error);
+        applyClassroomSettings(data);
+    };
+    loadClassroomSettings();
+    supabaseClient.channel('lop-x6-settings-changes')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'classroom_settings', filter: 'id=eq.lop-x6' },
+            ({ new: settings }) => applyClassroomSettings(settings))
+        .subscribe();
+    const saveClassroomSettings = async () => {
+        const { error } = await supabaseClient.from('classroom_settings').update({
+            title: mainTitleEl.textContent.trim(),
+            teacher_info: teacherInfoEl.textContent.trim(),
+            updated_at: new Date().toISOString()
+        }).eq('id', 'lop-x6');
+        if (error) console.error('Không thể lưu thông tin lớp:', error);
+    };
+    mainTitleEl.addEventListener('blur', saveClassroomSettings);
+    teacherInfoEl.addEventListener('blur', saveClassroomSettings);
     // Initial render
     renderAll();
 });

@@ -1,257 +1,231 @@
 /**
- * Student Manager
- * Handles the state of all students (assigned and unassigned)
+ * Keeps the seating chart in Supabase and mirrors changes from other devices.
  */
 class StudentManager {
     constructor(sampleData) {
         this.students = [];
         this.sampleData = sampleData || [];
+        this.classroomId = 'lop-x6';
+        this.syncQueue = Promise.resolve();
+        this.channel = null;
     }
 
-    init() {
-        this.loadFromStorage();
-    }
+    async init() {
+        const [{ data: settings, error: settingsError }, { data: students, error: studentsError }] = await Promise.all([
+            supabaseClient.from('classroom_settings').select('*').eq('id', this.classroomId).single(),
+            supabaseClient.from('classroom_students').select('*').eq('classroom_id', this.classroomId).order('created_at')
+        ]);
 
-    loadFromStorage() {
-        const stored = localStorage.getItem('seatingStudents');
-        if (stored) {
-            this.students = JSON.parse(stored);
-            const sampleMap = new Map(this.sampleData.map(item => [item.id, item]));
-            this.students.forEach(s => {
-                const sample = sampleMap.get(s.id);
-                if (sample) {
-                    s.name = sample.name;
-                    s.fullName = sample.fullName;
-                    if (sample.dob) s.dob = sample.dob;
-                } else if (!s.fullName) {
-                    s.fullName = s.name;
-                }
-                if (s.role) s.role = this.formatRole(s.role);
-                if (typeof s.isLocked === 'undefined') s.isLocked = false;
-            });
-            this.saveToStorage();
-        } else {
-            // Load sample data if nothing in storage
+        if (settingsError) throw settingsError;
+        if (studentsError) throw studentsError;
+
+        if (students.length === 0 && this.sampleData.length > 0) {
             this.students = JSON.parse(JSON.stringify(this.sampleData));
-            this.students.forEach(s => {
-                if (s.role) s.role = this.formatRole(s.role);
-                s.isLocked = false;
+            this.students.forEach(student => {
+                student.role = this.formatRole(student.role || '');
+                student.isLocked = Boolean(student.isLocked);
             });
-            this.saveToStorage();
+            await this.writeStudents(this.students);
+        } else {
+            this.students = students.map(student => this.fromRow(student));
         }
+
+        this.subscribeToRealtime();
+        document.dispatchEvent(new Event('app:state-changed'));
+        return settings;
     }
 
-    saveToStorage() {
-        localStorage.setItem('seatingStudents', JSON.stringify(this.students));
+    fromRow(row) {
+        return {
+            id: row.id,
+            name: row.name,
+            role: this.formatRole(row.role || ''),
+            dob: row.dob || '',
+            phone: row.phone || '',
+            parentPhone: row.parent_phone || '',
+            seatId: row.seat_id || null,
+            isLocked: Boolean(row.is_locked)
+        };
     }
 
-    getVietnameseSortKey(fullName) {
-        if (!fullName) return '';
-        const parts = fullName.trim().split(/\s+/);
-        if (parts.length === 1) return parts[0];
-        const firstName = parts[parts.length - 1];
-        const remaining = parts.slice(0, -1).join(' ');
-        return `${firstName} ${remaining}`;
+    toRow(student) {
+        return {
+            id: student.id,
+            classroom_id: this.classroomId,
+            name: student.name.trim(),
+            role: this.formatRole(student.role || ''),
+            dob: student.dob || null,
+            phone: (student.phone || '').trim(),
+            parent_phone: (student.parentPhone || '').trim(),
+            seat_id: student.seatId || null,
+            is_locked: Boolean(student.isLocked),
+            updated_at: new Date().toISOString()
+        };
     }
 
-    compareNames(a, b) {
-        const nameA = a.fullName || a.name || '';
-        const nameB = b.fullName || b.name || '';
-        const keyA = this.getVietnameseSortKey(nameA);
-        const keyB = this.getVietnameseSortKey(nameB);
-        return keyA.localeCompare(keyB, 'vi', { sensitivity: 'base' });
+    subscribeToRealtime() {
+        if (this.channel) supabaseClient.removeChannel(this.channel);
+        this.channel = supabaseClient
+            .channel('lop-x6-student-changes')
+            .on('postgres_changes', {
+                event: '*', schema: 'public', table: 'classroom_students',
+                filter: `classroom_id=eq.${this.classroomId}`
+            }, payload => this.applyRemoteStudentChange(payload))
+            .subscribe(status => {
+                document.dispatchEvent(new CustomEvent('app:sync-status', { detail: status }));
+            });
     }
 
-    getAll() {
-        return this.students;
+    applyRemoteStudentChange(payload) {
+        if (payload.eventType === 'DELETE') {
+            this.students = this.students.filter(student => student.id !== payload.old.id);
+        } else {
+            const incoming = this.fromRow(payload.new);
+            const index = this.students.findIndex(student => student.id === incoming.id);
+            if (index === -1) this.students.push(incoming);
+            else this.students[index] = incoming;
+        }
+        document.dispatchEvent(new Event('app:state-changed'));
     }
 
-    getAllSorted() {
-        return [...this.students].sort((a, b) => this.compareNames(a, b));
+    queue(task) {
+        this.syncQueue = this.syncQueue
+            .then(task)
+            .catch(error => {
+                console.error('Không thể đồng bộ sơ đồ lớp:', error);
+                document.dispatchEvent(new CustomEvent('app:sync-error', { detail: error }));
+            });
+        return this.syncQueue;
     }
 
-    getStudent(id) {
-        return this.students.find(s => s.id === id);
+    writeStudents(students) {
+        const rows = students.map(student => this.toRow(student));
+        return this.queue(async () => {
+            const { error } = await supabaseClient.from('classroom_students').upsert(rows);
+            if (error) throw error;
+        });
     }
 
-    getAssigned() {
-        return this.students.filter(s => s.seatId);
+    save() {
+        this.writeStudents(this.students);
     }
 
-    getUnassigned() {
-        return this.students.filter(s => !s.seatId).sort((a, b) => this.compareNames(a, b));
-    }
-
-    getStudentAtSeat(seatId) {
-        return this.students.find(s => s.seatId === seatId);
-    }
+    getAll() { return this.students; }
+    getStudent(id) { return this.students.find(student => student.id === id); }
+    getAssigned() { return this.students.filter(student => student.seatId); }
+    getUnassigned() { return this.students.filter(student => !student.seatId); }
+    getStudentAtSeat(seatId) { return this.students.find(student => student.seatId === seatId); }
 
     formatRole(role) {
-        if (!role) return '';
-        let clean = role.trim();
+        const clean = (role || '').trim();
         if (!clean) return '';
-        if (!clean.startsWith('(')) {
-            clean = '(' + clean;
-        }
-        if (!clean.endsWith(')')) {
-            clean = clean + ')';
-        }
-        return clean;
+        return `(${clean.replace(/^\(+|\)+$/g, '')})`;
     }
 
-    addStudent(fullName, role, dob = '', phone = '', parentPhone = '') {
-        const id = 'hs_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-        const cleanFullName = fullName.trim();
-        const parts = cleanFullName.split(/\s+/);
-        const shortName = parts.length > 2 ? parts.slice(-2).join(' ') : cleanFullName;
-        this.students.push({
-            id,
-            name: shortName,
-            fullName: cleanFullName,
-            role: this.formatRole(role),
-            dob: dob.trim(),
-            phone: phone.trim(),
-            parentPhone: parentPhone.trim(),
-            seatId: null,
-            isLocked: false
-        });
-        this.saveToStorage();
+    addStudent(name, role, dob = '', phone = '', parentPhone = '') {
+        const id = `hs_${crypto.randomUUID()}`;
+        this.students.push({ id, name: name.trim(), role: this.formatRole(role), dob: dob.trim(), phone: phone.trim(), parentPhone: parentPhone.trim(), seatId: null, isLocked: false });
+        this.save();
         return id;
     }
 
-    updateStudent(id, fullName, role, dob = '', phone = '', parentPhone = '') {
+    updateStudent(id, name, role, dob = '', phone = '', parentPhone = '') {
         const student = this.getStudent(id);
-        if (student) {
-            const cleanFullName = fullName.trim();
-            const parts = cleanFullName.split(/\s+/);
-            student.name = parts.length > 2 ? parts.slice(-2).join(' ') : cleanFullName;
-            student.fullName = cleanFullName;
-            student.role = this.formatRole(role);
-            student.dob = dob.trim();
-            student.phone = phone.trim();
-            student.parentPhone = parentPhone.trim();
-            this.saveToStorage();
-        }
+        if (!student) return;
+        student.name = name.trim();
+        student.role = this.formatRole(role);
+        student.dob = dob.trim();
+        student.phone = phone.trim();
+        student.parentPhone = parentPhone.trim();
+        this.save();
     }
 
     toggleLock(studentId) {
         const student = this.getStudent(studentId);
-        if (student && student.seatId) {
-            student.isLocked = !student.isLocked;
-            this.saveToStorage();
-        }
+        if (!student || !student.seatId) return;
+        student.isLocked = !student.isLocked;
+        this.save();
     }
 
     removeStudent(id) {
-        this.students = this.students.filter(s => s.id !== id);
-        this.saveToStorage();
+        this.students = this.students.filter(student => student.id !== id);
+        this.queue(async () => {
+            const { error } = await supabaseClient.from('classroom_students').delete().eq('id', id).eq('classroom_id', this.classroomId);
+            if (error) throw error;
+        });
     }
 
     assignSeat(studentId, seatId) {
         const student = this.getStudent(studentId);
-        if (student) {
-            student.seatId = seatId;
-            this.saveToStorage();
-        }
+        if (!student) return;
+        student.seatId = seatId;
+        this.save();
     }
 
     unassignSeat(studentId) {
         const student = this.getStudent(studentId);
-        if (student) {
-            student.seatId = null;
-            student.isLocked = false;
-            this.saveToStorage();
-        }
+        if (!student) return;
+        student.seatId = null;
+        student.isLocked = false;
+        this.save();
     }
 
     swapSeats(studentId1, studentId2) {
-        const s1 = this.getStudent(studentId1);
-        const s2 = this.getStudent(studentId2);
-        
-        if (s1 && s2) {
-            const tempSeat = s1.seatId;
-            s1.seatId = s2.seatId;
-            s2.seatId = tempSeat;
-            this.saveToStorage();
-        }
+        const first = this.getStudent(studentId1);
+        const second = this.getStudent(studentId2);
+        if (!first || !second) return;
+        [first.seatId, second.seatId] = [second.seatId, first.seatId];
+        this.save();
     }
 
     clearAllSeats() {
-        // Only clear unlocked students
-        this.students.forEach(s => {
-            if (!s.isLocked) {
-                s.seatId = null;
-            }
+        this.students.forEach(student => {
+            if (!student.isLocked) student.seatId = null;
         });
-        this.saveToStorage();
+        this.save();
     }
 
     randomizeSeats(seatIds) {
-        // Identify locked students and their seats
-        const lockedSeats = new Set(
-            this.students.filter(s => s.isLocked && s.seatId).map(s => s.seatId)
-        );
-
-        // Available seats are all seats NOT occupied by a locked student
-        const availableSeats = seatIds.filter(id => !lockedSeats.has(id));
-
-        // Students to shuffle are all students that are NOT locked (both unassigned and currently in unlocked seats)
-        const toShuffle = this.students.filter(s => !s.isLocked);
-        
-        // Reset their seats before reshuffling
-        toShuffle.forEach(s => s.seatId = null);
-
-        // Fisher-Yates shuffle
-        for (let i = toShuffle.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [toShuffle[i], toShuffle[j]] = [toShuffle[j], toShuffle[i]];
+        const lockedSeats = new Set(this.students.filter(student => student.isLocked && student.seatId).map(student => student.seatId));
+        const availableSeats = seatIds.filter(seatId => !lockedSeats.has(seatId));
+        const toShuffle = this.students.filter(student => !student.isLocked);
+        toShuffle.forEach(student => { student.seatId = null; });
+        for (let index = toShuffle.length - 1; index > 0; index--) {
+            const randomIndex = Math.floor(Math.random() * (index + 1));
+            [toShuffle[index], toShuffle[randomIndex]] = [toShuffle[randomIndex], toShuffle[index]];
         }
-
-        // Assign shuffled students into available seats
-        const numToAssign = Math.min(toShuffle.length, availableSeats.length);
-        for (let i = 0; i < numToAssign; i++) {
-            toShuffle[i].seatId = availableSeats[i];
-        }
-
-        this.saveToStorage();
+        toShuffle.slice(0, availableSeats.length).forEach((student, index) => { student.seatId = availableSeats[index]; });
+        this.save();
     }
-    
-    rotateColumns(columns) {
-        // columns is an array of column ids [c1, c2, c3, c4]
-        // This function will move all students from c1 -> c2, c2 -> c3, c3 -> c4, c4 -> c1
-        const shifts = {};
-        for(let i=0; i<columns.length; i++) {
-            const nextIdx = (i + 1) % columns.length;
-            shifts[columns[i]] = columns[nextIdx];
-        }
 
-        const assigned = this.getAssigned();
-        assigned.forEach(student => {
-            // seatId format: seat-c1-r1-s1
-            const parts = student.seatId.split('-'); // ["seat", "c1", "r1", "s1"]
-            const col = parts[1];
-            if (shifts[col]) {
-                parts[1] = shifts[col];
+    rotateColumns(columns) {
+        const shifts = Object.fromEntries(columns.map((column, index) => [column, columns[(index + 1) % columns.length]]));
+        this.getAssigned().forEach(student => {
+            const parts = student.seatId.split('-');
+            if (shifts[parts[1]]) {
+                parts[1] = shifts[parts[1]];
                 student.seatId = parts.join('-');
             }
         });
-        
-        this.saveToStorage();
+        this.save();
     }
 
     importBulk(text) {
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        let addedCount = 0;
-        
+        const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
         lines.forEach(line => {
-            // Format can be "Name" or "Name, Role"
-            const parts = line.split(',');
-            const name = parts[0];
-            const role = parts.length > 1 ? parts[1].trim() : '';
-            this.addStudent(name, role);
-            addedCount++;
+            const [name, ...roleParts] = line.split(',');
+            this.students.push({
+                id: `hs_${crypto.randomUUID()}`,
+                name: name.trim(),
+                role: this.formatRole(roleParts.join(',').trim()),
+                dob: '',
+                phone: '',
+                parentPhone: '',
+                seatId: null,
+                isLocked: false
+            });
         });
-        
-        return addedCount;
+        this.save();
+        return lines.length;
     }
 }

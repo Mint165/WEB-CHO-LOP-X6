@@ -1,0 +1,1 @@
+drop index public.classroom_students_unique_seat;
