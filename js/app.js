@@ -39,23 +39,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Helper to format date DD/MM/YYYY
+    const formatDateVN = (dateStr) => {
+        if (!dateStr) return '<span class="text-empty">Chưa có</span>';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return dateStr;
+    };
+
     // 2. Global Render Function
     const renderStudentInfoTable = () => {
         const tbody = document.getElementById('student-info-tbody');
+        const badge = document.getElementById('info-total-badge');
+        const searchInput = document.getElementById('student-info-search');
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+        if (!tbody) return;
         tbody.innerHTML = '';
-        const students = studentManager.getAll();
-        students.forEach((student, index) => {
+        
+        let allStudents = studentManager.getAllSorted();
+        if (badge) badge.textContent = `${allStudents.length} học sinh`;
+
+        const filtered = allStudents.filter(s => {
+            if (!query) return true;
+            return (s.name && s.name.toLowerCase().includes(query)) ||
+                   (s.role && s.role.toLowerCase().includes(query)) ||
+                   (s.phone && s.phone.includes(query)) ||
+                   (s.parentPhone && s.parentPhone.includes(query));
+        });
+
+        if (filtered.length === 0) {
             const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">Không tìm thấy học sinh nào phù hợp</td>`;
+            tbody.appendChild(tr);
+            return;
+        }
+
+        filtered.forEach((student, index) => {
+            const tr = document.createElement('tr');
+            const roleHtml = student.role 
+                ? `<span class="role-badge">${student.role.replace(/[()]/g, '')}</span>` 
+                : '<span class="text-empty">—</span>';
+            const phoneHtml = student.phone || '<span class="text-empty">Chưa có</span>';
+            const parentPhoneHtml = student.parentPhone || '<span class="text-empty">Chưa có</span>';
+
             tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${student.name}</td>
-                <td>${student.role || ''}</td>
-                <td>${student.dob ? new Date(student.dob).toLocaleDateString('vi-VN') : ''}</td>
-                <td>${student.phone || ''}</td>
-                <td>${student.parentPhone || ''}</td>
+                <td style="text-align: center; font-weight: 500; color: var(--text-muted);">${index + 1}</td>
+                <td style="font-weight: 600;">${student.name}</td>
+                <td>${roleHtml}</td>
+                <td>${formatDateVN(student.dob)}</td>
+                <td>${phoneHtml}</td>
+                <td>${parentPhoneHtml}</td>
                 <td>
-                    <button class="btn-icon edit" data-id="${student.id}" title="Sửa"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon delete" data-id="${student.id}" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                    <div class="table-actions">
+                        <button class="btn-icon edit" data-id="${student.id}" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-icon delete" data-id="${student.id}" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -65,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.querySelectorAll('.btn-icon.edit').forEach(btn => {
             btn.addEventListener('click', () => {
                 const id = btn.getAttribute('data-id');
-                // Trigger existing edit flow
                 document.dispatchEvent(new CustomEvent('app:edit-student', { detail: { studentId: id } }));
             });
         });
@@ -89,6 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
             renderStudentInfoTable();
         }
     };
+
+    // Listen to info search box
+    const infoSearchEl = document.getElementById('student-info-search');
+    if (infoSearchEl) {
+        infoSearchEl.addEventListener('input', renderStudentInfoTable);
+    }
 
     // 3. Listen to state changes
     document.addEventListener('app:state-changed', renderAll);

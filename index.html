@@ -100,36 +100,44 @@
                     </div>
                 </div>
             </aside>
-            </div>
+            </div> <!-- Closes .main-content -->
+            </div> <!-- Closes #page-seating -->
 
             <!-- PAGE: STUDENT INFO -->
             <div id="page-student-info" class="page-view" style="display: none;">
                 <header class="app-header">
                     <div class="header-left">
-                        <h1><i class="fa-solid fa-address-card"></i> <span>Thông Tin Học Sinh</span></h1>
+                        <h1><i class="fa-solid fa-address-card"></i> <span>Danh Sách & Thông Tin Học Sinh</span></h1>
+                        <span class="student-count-badge" id="info-total-badge">43 học sinh</span>
                     </div>
                     <div class="header-right">
+                        <div class="search-box-header">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="student-info-search" placeholder="Tìm theo tên, SĐT, chức vụ...">
+                        </div>
                         <button id="btn-add-student-info" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm Học Sinh</button>
                     </div>
                 </header>
-                <div class="student-info-content" style="padding: 20px; overflow-y: auto; height: calc(100vh - 70px);">
-                    <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden;">
-                        <table class="student-info-table" style="width: 100%; border-collapse: collapse; text-align: left;">
-                            <thead style="background-color: var(--surface-100); border-bottom: 2px solid var(--surface-200);">
-                                <tr>
-                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">STT</th>
-                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Họ và Tên</th>
-                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Chức Vụ</th>
-                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Ngày Sinh</th>
-                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">SĐT Cá Nhân</th>
-                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">SĐT Phụ Huynh</th>
-                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Thao Tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="student-info-tbody">
-                                <!-- Injected via JS -->
-                            </tbody>
-                        </table>
+                <div class="student-info-content">
+                    <div class="student-info-card">
+                        <div class="table-responsive">
+                            <table class="student-info-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px; text-align: center;">STT</th>
+                                        <th>Họ và Tên</th>
+                                        <th>Chức Vụ</th>
+                                        <th>Ngày Sinh</th>
+                                        <th>SĐT Cá Nhân</th>
+                                        <th>SĐT Phụ Huynh</th>
+                                        <th style="width: 110px; text-align: center;">Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-info-tbody">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

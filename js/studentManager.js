@@ -35,8 +35,27 @@ class StudentManager {
         localStorage.setItem('seatingStudents', JSON.stringify(this.students));
     }
 
+    getVietnameseSortKey(fullName) {
+        if (!fullName) return '';
+        const parts = fullName.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0];
+        const firstName = parts[parts.length - 1];
+        const remaining = parts.slice(0, -1).join(' ');
+        return `${firstName} ${remaining}`;
+    }
+
+    compareNames(a, b) {
+        const keyA = this.getVietnameseSortKey(a.name || '');
+        const keyB = this.getVietnameseSortKey(b.name || '');
+        return keyA.localeCompare(keyB, 'vi', { sensitivity: 'base' });
+    }
+
     getAll() {
         return this.students;
+    }
+
+    getAllSorted() {
+        return [...this.students].sort((a, b) => this.compareNames(a, b));
     }
 
     getStudent(id) {
@@ -48,7 +67,7 @@ class StudentManager {
     }
 
     getUnassigned() {
-        return this.students.filter(s => !s.seatId);
+        return this.students.filter(s => !s.seatId).sort((a, b) => this.compareNames(a, b));
     }
 
     getStudentAtSeat(seatId) {
