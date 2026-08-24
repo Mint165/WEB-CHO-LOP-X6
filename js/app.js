@@ -1,7 +1,9 @@
 /**
  * Main Application Logic
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
     // 1. Initialize Managers
     const studentManager = new StudentManager(typeof sampleStudents !== 'undefined' ? sampleStudents : []);
     studentManager.init();
@@ -273,25 +275,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 7. Load and save chart header title
+    // 7. Load, save and mirror the common classroom heading through Supabase.
     const mainTitleEl = document.getElementById('chart-main-title');
     const teacherInfoEl = document.getElementById('chart-teacher-info');
 
-    const savedTitle = localStorage.getItem('seatingChartTitle_v2');
-    const savedTeacher = localStorage.getItem('seatingChartTeacher_v2');
-    if (savedTitle && mainTitleEl) mainTitleEl.innerHTML = savedTitle;
-    if (savedTeacher && teacherInfoEl) teacherInfoEl.innerHTML = savedTeacher;
+    const applyClassroomSettings = (settings) => {
+        if (!settings) return;
+        mainTitleEl.textContent = settings.title;
+        teacherInfoEl.textContent = settings.teacher_info;
+    };
 
-    if (mainTitleEl) {
-        mainTitleEl.addEventListener('blur', () => {
-            localStorage.setItem('seatingChartTitle_v2', mainTitleEl.innerHTML);
-        });
-    }
-    if (teacherInfoEl) {
-        teacherInfoEl.addEventListener('blur', () => {
-            localStorage.setItem('seatingChartTeacher_v2', teacherInfoEl.innerHTML);
-        });
-    }
+    const loadClassroomSettings = async () => {
+        const { data, error } = await supabaseClient
+            .from('classroom_settings')
+            .select('*')
+            .eq('id', 'lop-x6')
+            .single();
+        if (error) return console.error('Không thể tải thông tin lớp:', error);
+        applyClassroomSettings(data);
+    };
+    loadClassroomSettings();
+
+    supabaseClient
+        .channel('lop-x6-settings-changes')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'classroom_settings', filter: 'id=eq.lop-x6' },
+            ({ new: settings }) => applyClassroomSettings(settings))
+        .subscribe();
+
+    const saveClassroomSettings = async () => {
+        const { error } = await supabaseClient.from('classroom_settings').update({
+            title: mainTitleEl.textContent.trim(),
+            teacher_info: teacherInfoEl.textContent.trim(),
+            updated_at: new Date().toISOString()
+        }).eq('id', 'lop-x6');
+        if (error) console.error('Không thể lưu thông tin lớp:', error);
+    };
+    mainTitleEl.addEventListener('blur', saveClassroomSettings);
+    teacherInfoEl.addEventListener('blur', saveClassroomSettings);
 
     // Initial render
     renderAll();
