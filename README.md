@@ -1,20 +1,18 @@
-# Ứng Dụng Xếp Sơ Đồ Lớp Học Kéo Thả (Seating Chart Planner)
+# Ứng Dụng Xếp Sơ Đồ Lớp Học Kéo Thả
 
-Ứng dụng web tương tác giúp giáo viên và ban cán sự lớp dễ dàng sắp xếp, quản lý và thay đổi vị trí chỗ ngồi của học sinh theo sơ đồ lớp học một cách trực quan, nhanh chóng.
+Ứng dụng giúp quản lý sơ đồ lớp 12/6: kéo thả, khóa chỗ, xáo trộn, nhập danh sách và xuất ảnh.
 
-## ✨ Tính năng nổi bật
+## Đồng bộ đa thiết bị
 
-- 🪑 **Khung sơ đồ chuẩn:** Mô phỏng sơ đồ lớp 4 dãy bàn đôi, Bảng đen và Bàn giáo viên.
-- ✋ **Kéo & Thả (Drag & Drop):** Kéo thả thẻ học sinh từ danh sách chờ vào ghế, hoặc kéo đè lên nhau để hoán đổi vị trí (Swap).
-- ✏️ **Chỉnh sửa trực tiếp:** Nút sửa tên và chức danh nhanh ngay cạnh thẻ học sinh hoặc nhấp đúp (Double-click) vào bàn học.
-- 🔤 **Tự động đóng mở ngoặc:** Tự động chuẩn hóa chức vụ như `tổ trưởng` thành `(tổ trưởng)` hoặc `(LỚP TRƯỞNG)`.
-- 🔒 **Khóa vị trí (Ghim chỗ ngồi):** Khóa cố định vị trí các bạn học sinh không muốn bị thay đổi khi bấm xáo trộn.
-- 🎲 **Xáo trộn ngẫu nhiên:** Bốc thăm ngẫu nhiên chỗ ngồi cho lớp mà vẫn giữ nguyên các vị trí đang bị khóa.
-- 🔄 **Đảo dãy (Xoay vòng theo tuần):** Dịch chuyển luân phiên Tổ 1 ➔ 2 ➔ 3 ➔ 4 ➔ 1.
-- 📥 **Nhập danh sách nhanh:** Hỗ trợ copy & paste hàng loạt tên từ Excel / Word / Google Sheet.
-- 📷 **Xuất ảnh HD & In ấn:** Xuất toàn bộ sơ đồ ra ảnh PNG độ nét cao hoặc xem trước bản in khổ A4 (tự động ẩn các nút điều khiển).
-- 💾 **Tự động lưu LocalStorage:** Không lo mất dữ liệu khi tải lại trang web.
+Ứng dụng dùng Supabase Database, Auth và Realtime. Hãy đăng nhập **cùng một tài khoản email** trên điện thoại, máy tính hoặc máy tính bảng; mọi thay đổi về học sinh, vị trí ngồi, trạng thái khóa, tiêu đề và thông tin giáo viên sẽ xuất hiện trực tiếp trên các thiết bị khác.
 
-## 🚀 Hướng dẫn sử dụng
+Lần đầu mở phiên bản mới, bạn có thể tạo tài khoản ngay tại màn hình đăng nhập. Nếu Supabase yêu cầu xác nhận email, hãy xác nhận rồi đăng nhập lại.
 
-Mở trực tiếp file `index.html` bằng bất kỳ trình duyệt web nào (Chrome, Edge, Firefox, Cốc Cốc, Safari...) mà không cần cài đặt thêm phần mềm.
+## Phát triển cục bộ
+
+```bash
+npm install
+npm run dev
+```
+
+Migration Supabase được lưu tại `supabase/migrations/`. Khóa publishable ở `js/supabaseClient.js` chỉ dùng phía trình duyệt; quyền truy cập dữ liệu được bảo vệ bằng Supabase Auth và Row Level Security. Không thêm khóa `service_role` vào mã nguồn hoặc trình duyệt.
