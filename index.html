@@ -14,6 +14,17 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <section id="auth-gate" hidden style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#f1f5f9">
+        <form id="auth-form" style="width:min(100%,400px);padding:28px;background:#fff;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.15)">
+            <h1 style="margin:0 0 8px">Sơ đồ lớp 12/6</h1>
+            <p style="margin:0 0 18px;color:#475569">Đăng nhập để xem và đồng bộ sơ đồ trên nhiều thiết bị.</p>
+            <label>Email<input id="auth-email" type="email" required autocomplete="email" style="display:block;width:100%;margin:6px 0 14px;padding:10px;box-sizing:border-box"></label>
+            <label>Mật khẩu<input id="auth-password" type="password" required minlength="6" autocomplete="current-password" style="display:block;width:100%;margin:6px 0 14px;padding:10px;box-sizing:border-box"></label>
+            <button id="auth-submit" class="btn btn-primary w-100" type="submit">Đăng nhập</button>
+            <button id="auth-toggle" type="button" style="margin:14px auto 0;display:block;border:0;background:transparent;color:#4f46e5;cursor:pointer">Chưa có tài khoản? Tạo tài khoản</button>
+            <p id="auth-message" aria-live="polite" style="min-height:1.25em;margin:14px 0 0;color:#b91c1c"></p>
+        </form>
+    </section>
     <div class="app-layout">
         <!-- SIDE NAVIGATION -->
         <nav class="side-nav">
@@ -35,6 +46,7 @@
                 <h1><i class="fa-solid fa-school"></i> <span>Quản Lý Sơ Đồ Lớp</span></h1>
             </div>
             <div class="header-right">
+                <button id="btn-sign-out" class="btn btn-secondary" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
                 <button id="btn-randomize" class="btn btn-secondary" title="Xáo trộn ngẫu nhiên"><i class="fa-solid fa-dice"></i> Xáo trộn</button>
                 <button id="btn-rotate" class="btn btn-secondary" title="Đảo vị trí các dãy (1->2->3->4->1)"><i class="fa-solid fa-arrows-rotate"></i> Đảo Dãy</button>
                 <button id="btn-clear" class="btn btn-danger" title="Xóa sơ đồ hiện tại"><i class="fa-solid fa-trash-can"></i> Làm mới</button>
@@ -217,6 +229,9 @@
     <script src="js/seatingGrid.js"></script>
     <script src="js/dragdrop.js"></script>
     <script src="js/exporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
