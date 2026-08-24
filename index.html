@@ -14,8 +14,22 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- HEADER / TOOLBAR -->
+    <div class="app-layout">
+        <!-- SIDE NAVIGATION -->
+        <nav class="side-nav">
+            <div class="nav-logo">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active" data-page="page-seating" title="Sơ Đồ Lớp"><i class="fa-solid fa-users-viewfinder"></i></a></li>
+                <li><a href="#" class="nav-link" data-page="page-student-info" title="Nhập Thông Tin"><i class="fa-solid fa-address-card"></i></a></li>
+            </ul>
+        </nav>
+
+        <div class="app-container">
+            <!-- PAGE: SEATING CHART -->
+            <div id="page-seating" class="page-view active-page">
+                <!-- HEADER / TOOLBAR -->
         <header class="app-header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-school"></i> <span>Quản Lý Sơ Đồ Lớp</span></h1>
@@ -86,6 +100,39 @@
                     </div>
                 </div>
             </aside>
+            </div>
+
+            <!-- PAGE: STUDENT INFO -->
+            <div id="page-student-info" class="page-view" style="display: none;">
+                <header class="app-header">
+                    <div class="header-left">
+                        <h1><i class="fa-solid fa-address-card"></i> <span>Thông Tin Học Sinh</span></h1>
+                    </div>
+                    <div class="header-right">
+                        <button id="btn-add-student-info" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm Học Sinh</button>
+                    </div>
+                </header>
+                <div class="student-info-content" style="padding: 20px; overflow-y: auto; height: calc(100vh - 70px);">
+                    <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                        <table class="student-info-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead style="background-color: var(--surface-100); border-bottom: 2px solid var(--surface-200);">
+                                <tr>
+                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">STT</th>
+                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Họ và Tên</th>
+                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Chức Vụ</th>
+                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Ngày Sinh</th>
+                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">SĐT Cá Nhân</th>
+                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">SĐT Phụ Huynh</th>
+                                    <th style="padding: 16px; font-weight: 600; color: var(--text-secondary);">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-info-tbody">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -102,6 +149,18 @@
             <div class="form-group">
                 <label>Chức vụ (Tuỳ chọn)</label>
                 <input type="text" id="input-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
+            </div>
+            <div class="form-group">
+                <label>Ngày sinh (Tuỳ chọn)</label>
+                <input type="date" id="input-student-dob">
+            </div>
+            <div class="form-group">
+                <label>SĐT Cá Nhân (Tuỳ chọn)</label>
+                <input type="tel" id="input-student-phone" placeholder="VD: 0987654321">
+            </div>
+            <div class="form-group">
+                <label>SĐT Phụ Huynh (Tuỳ chọn)</label>
+                <input type="tel" id="input-student-parent-phone" placeholder="VD: 0912345678">
             </div>
             <button id="btn-save-student" class="btn btn-primary w-100">Lưu</button>
         </div>
@@ -120,6 +179,18 @@
             <div class="form-group">
                 <label>Chức vụ (Tuỳ chọn)</label>
                 <input type="text" id="edit-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
+            </div>
+            <div class="form-group">
+                <label>Ngày sinh (Tuỳ chọn)</label>
+                <input type="date" id="edit-student-dob">
+            </div>
+            <div class="form-group">
+                <label>SĐT Cá Nhân (Tuỳ chọn)</label>
+                <input type="tel" id="edit-student-phone" placeholder="VD: 0987654321">
+            </div>
+            <div class="form-group">
+                <label>SĐT Phụ Huynh (Tuỳ chọn)</label>
+                <input type="tel" id="edit-student-parent-phone" placeholder="VD: 0912345678">
             </div>
             <button id="btn-update-student" class="btn btn-primary w-100"><i class="fa-solid fa-check"></i> Cập nhật</button>
         </div>

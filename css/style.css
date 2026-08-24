@@ -47,10 +47,83 @@ body {
 /* ==========================================================================
    Layout
    ========================================================================== */
+.app-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.side-nav {
+    width: 70px;
+    background-color: var(--bg-panel);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    box-shadow: var(--shadow-sm);
+    z-index: 20;
+}
+
+.nav-logo {
+    font-size: 28px;
+    color: var(--primary);
+    margin-bottom: 30px;
+}
+
+.nav-links {
+    list-style: none;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.nav-links li {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 22px;
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--primary);
+    background-color: var(--secondary);
+}
+
+.nav-link.active {
+    color: white;
+    background-color: var(--primary);
+}
+
 .app-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    flex: 1;
+    overflow: hidden;
+}
+
+.page-view {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+}
+
+.page-view.active-page {
+    display: flex;
 }
 
 .main-content {
@@ -849,4 +922,38 @@ body {
         font-weight: 700 !important;
         white-space: nowrap !important;
     }
+}
+
+/* ==========================================================================
+   Student Info Table
+   ========================================================================== */
+.student-info-table th {
+    background-color: var(--secondary);
+    color: var(--text-muted);
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.student-info-table td {
+    padding: 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.875rem;
+}
+
+.student-info-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.student-info-table tbody tr:hover {
+    background-color: var(--desk-hover);
+}
+
+.student-info-table tbody tr:last-child td {
+    border-bottom: none;
 }

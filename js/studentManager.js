@@ -68,12 +68,15 @@ class StudentManager {
         return clean;
     }
 
-    addStudent(name, role) {
+    addStudent(name, role, dob = '', phone = '', parentPhone = '') {
         const id = 'hs_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
         this.students.push({
             id,
             name: name.trim(),
             role: this.formatRole(role),
+            dob: dob.trim(),
+            phone: phone.trim(),
+            parentPhone: parentPhone.trim(),
             seatId: null,
             isLocked: false
         });
@@ -81,11 +84,14 @@ class StudentManager {
         return id;
     }
 
-    updateStudent(id, name, role) {
+    updateStudent(id, name, role, dob = '', phone = '', parentPhone = '') {
         const student = this.getStudent(id);
         if (student) {
             student.name = name.trim();
             student.role = this.formatRole(role);
+            student.dob = dob.trim();
+            student.phone = phone.trim();
+            student.parentPhone = parentPhone.trim();
             this.saveToStorage();
         }
     }

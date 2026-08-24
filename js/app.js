@@ -14,12 +14,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exporterManager = new ExporterManager('capture-area');
 
+    // 1.5 Routing Logic
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetPage = link.getAttribute('data-page');
+            
+            // Update active link
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
+            // Update active page
+            document.querySelectorAll('.page-view').forEach(page => {
+                page.style.display = 'none';
+                page.classList.remove('active-page');
+            });
+            const targetEl = document.getElementById(targetPage);
+            targetEl.style.display = 'flex';
+            targetEl.classList.add('active-page');
+
+            if (targetPage === 'page-student-info') {
+                renderStudentInfoTable();
+            }
+        });
+    });
+
     // 2. Global Render Function
+    const renderStudentInfoTable = () => {
+        const tbody = document.getElementById('student-info-tbody');
+        tbody.innerHTML = '';
+        const students = studentManager.getAll();
+        students.forEach((student, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${student.name}</td>
+                <td>${student.role || ''}</td>
+                <td>${student.dob ? new Date(student.dob).toLocaleDateString('vi-VN') : ''}</td>
+                <td>${student.phone || ''}</td>
+                <td>${student.parentPhone || ''}</td>
+                <td>
+                    <button class="btn-icon edit" data-id="${student.id}" title="Sửa"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon delete" data-id="${student.id}" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Add event listeners for edit and delete buttons in the table
+        tbody.querySelectorAll('.btn-icon.edit').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                // Trigger existing edit flow
+                document.dispatchEvent(new CustomEvent('app:edit-student', { detail: { studentId: id } }));
+            });
+        });
+
+        tbody.querySelectorAll('.btn-icon.delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                document.dispatchEvent(new CustomEvent('app:delete-student', { detail: { studentId: id } }));
+            });
+        });
+    };
+
     const renderAll = () => {
         seatingGrid.renderStudents(studentManager);
         
         const searchQuery = document.getElementById('search-input').value;
         seatingGrid.renderUnassigned(studentManager, searchQuery);
+
+        // Also render the student info table if it's currently visible
+        if (document.getElementById('page-student-info').classList.contains('active-page')) {
+            renderStudentInfoTable();
+        }
     };
 
     // 3. Listen to state changes
@@ -89,6 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const editStudentId = document.getElementById('edit-student-id');
     const editStudentName = document.getElementById('edit-student-name');
     const editStudentRole = document.getElementById('edit-student-role');
+    const editStudentDob = document.getElementById('edit-student-dob');
+    const editStudentPhone = document.getElementById('edit-student-phone');
+    const editStudentParentPhone = document.getElementById('edit-student-parent-phone');
 
     // Listen to edit student event from sidebar cards
     document.addEventListener('app:edit-student', (e) => {
@@ -96,7 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (student) {
             editStudentId.value = student.id;
             editStudentName.value = student.name;
-            editStudentRole.value = student.role || '';
+            editStudentRole.value = student.role ? student.role.replace(/[()]/g, '') : '';
+            editStudentDob.value = student.dob || '';
+            editStudentPhone.value = student.phone || '';
+            editStudentParentPhone.value = student.parentPhone || '';
             modalEdit.classList.add('show');
             setTimeout(() => {
                 editStudentName.focus();
@@ -106,6 +180,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btn-add-student').addEventListener('click', () => {
+        modalAdd.classList.add('show');
+        document.getElementById('input-student-name').focus();
+    });
+
+    document.getElementById('btn-add-student-info').addEventListener('click', () => {
         modalAdd.classList.add('show');
         document.getElementById('input-student-name').focus();
     });
@@ -132,10 +211,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-save-student').addEventListener('click', () => {
         const name = document.getElementById('input-student-name').value;
         const role = document.getElementById('input-student-role').value;
+        const dob = document.getElementById('input-student-dob').value;
+        const phone = document.getElementById('input-student-phone').value;
+        const parentPhone = document.getElementById('input-student-parent-phone').value;
         if (name.trim()) {
-            studentManager.addStudent(name, role);
+            studentManager.addStudent(name, role, dob, phone, parentPhone);
             document.getElementById('input-student-name').value = '';
             document.getElementById('input-student-role').value = '';
+            document.getElementById('input-student-dob').value = '';
+            document.getElementById('input-student-phone').value = '';
+            document.getElementById('input-student-parent-phone').value = '';
             modalAdd.classList.remove('show');
             renderAll();
         } else {
@@ -156,8 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = editStudentId.value;
         const name = editStudentName.value;
         const role = editStudentRole.value;
+        const dob = editStudentDob.value;
+        const phone = editStudentPhone.value;
+        const parentPhone = editStudentParentPhone.value;
         if (name.trim()) {
-            studentManager.updateStudent(id, name, role);
+            studentManager.updateStudent(id, name, role, dob, phone, parentPhone);
             modalEdit.classList.remove('show');
             renderAll();
         } else {
