@@ -16,10 +16,20 @@ class StudentManager {
         const stored = localStorage.getItem('seatingStudents');
         if (stored) {
             this.students = JSON.parse(stored);
+            const sampleMap = new Map(this.sampleData.map(item => [item.id, item]));
             this.students.forEach(s => {
+                const sample = sampleMap.get(s.id);
+                if (sample) {
+                    s.name = sample.name;
+                    s.fullName = sample.fullName;
+                    if (sample.dob) s.dob = sample.dob;
+                } else if (!s.fullName) {
+                    s.fullName = s.name;
+                }
                 if (s.role) s.role = this.formatRole(s.role);
                 if (typeof s.isLocked === 'undefined') s.isLocked = false;
             });
+            this.saveToStorage();
         } else {
             // Load sample data if nothing in storage
             this.students = JSON.parse(JSON.stringify(this.sampleData));
@@ -45,8 +55,10 @@ class StudentManager {
     }
 
     compareNames(a, b) {
-        const keyA = this.getVietnameseSortKey(a.name || '');
-        const keyB = this.getVietnameseSortKey(b.name || '');
+        const nameA = a.fullName || a.name || '';
+        const nameB = b.fullName || b.name || '';
+        const keyA = this.getVietnameseSortKey(nameA);
+        const keyB = this.getVietnameseSortKey(nameB);
         return keyA.localeCompare(keyB, 'vi', { sensitivity: 'base' });
     }
 
@@ -87,11 +99,15 @@ class StudentManager {
         return clean;
     }
 
-    addStudent(name, role, dob = '', phone = '', parentPhone = '') {
+    addStudent(fullName, role, dob = '', phone = '', parentPhone = '') {
         const id = 'hs_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        const cleanFullName = fullName.trim();
+        const parts = cleanFullName.split(/\s+/);
+        const shortName = parts.length > 2 ? parts.slice(-2).join(' ') : cleanFullName;
         this.students.push({
             id,
-            name: name.trim(),
+            name: shortName,
+            fullName: cleanFullName,
             role: this.formatRole(role),
             dob: dob.trim(),
             phone: phone.trim(),
@@ -103,10 +119,13 @@ class StudentManager {
         return id;
     }
 
-    updateStudent(id, name, role, dob = '', phone = '', parentPhone = '') {
+    updateStudent(id, fullName, role, dob = '', phone = '', parentPhone = '') {
         const student = this.getStudent(id);
         if (student) {
-            student.name = name.trim();
+            const cleanFullName = fullName.trim();
+            const parts = cleanFullName.split(/\s+/);
+            student.name = parts.length > 2 ? parts.slice(-2).join(' ') : cleanFullName;
+            student.fullName = cleanFullName;
             student.role = this.formatRole(role);
             student.dob = dob.trim();
             student.phone = phone.trim();

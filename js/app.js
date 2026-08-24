@@ -62,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const filtered = allStudents.filter(s => {
             if (!query) return true;
-            return (s.name && s.name.toLowerCase().includes(query)) ||
+            return (s.fullName && s.fullName.toLowerCase().includes(query)) ||
+                   (s.name && s.name.toLowerCase().includes(query)) ||
                    (s.role && s.role.toLowerCase().includes(query)) ||
                    (s.phone && s.phone.includes(query)) ||
                    (s.parentPhone && s.parentPhone.includes(query));
@@ -70,23 +71,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (filtered.length === 0) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">Không tìm thấy học sinh nào phù hợp</td>`;
+            tr.innerHTML = `<td colspan="6" style="text-align: center; padding: 32px; color: var(--text-muted);">Không tìm thấy học sinh nào phù hợp</td>`;
             tbody.appendChild(tr);
             return;
         }
 
         filtered.forEach((student, index) => {
             const tr = document.createElement('tr');
-            const roleHtml = student.role 
-                ? `<span class="role-badge">${student.role.replace(/[()]/g, '')}</span>` 
-                : '<span class="text-empty">—</span>';
             const phoneHtml = student.phone || '<span class="text-empty">Chưa có</span>';
             const parentPhoneHtml = student.parentPhone || '<span class="text-empty">Chưa có</span>';
 
             tr.innerHTML = `
                 <td style="text-align: center; font-weight: 500; color: var(--text-muted);">${index + 1}</td>
-                <td style="font-weight: 600;">${student.name}</td>
-                <td>${roleHtml}</td>
+                <td style="font-weight: 600;">${student.fullName || student.name}</td>
                 <td>${formatDateVN(student.dob)}</td>
                 <td>${phoneHtml}</td>
                 <td>${parentPhoneHtml}</td>
@@ -210,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const student = studentManager.getStudent(e.detail.studentId);
         if (student) {
             editStudentId.value = student.id;
-            editStudentName.value = student.name;
+            editStudentName.value = student.fullName || student.name;
             editStudentRole.value = student.role ? student.role.replace(/[()]/g, '') : '';
             editStudentDob.value = student.dob || '';
             editStudentPhone.value = student.phone || '';
