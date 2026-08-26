@@ -226,11 +226,30 @@
         </div>
     </div>
 
+    <!-- Match Student Modal (Smart Matching Dropdown) -->
+    <div id="modal-match-student" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Phát hiện Học sinh</h2>
+            <p>Tên <strong><span id="match-student-name-display"></span></strong> không khớp hoặc khớp nhiều học sinh trên sơ đồ lớp. Bạn muốn làm gì?</p>
+            <div class="form-group" style="margin-top: 15px;">
+                <label>Chọn học sinh trên sơ đồ để gán (Tùy chọn):</label>
+                <select id="match-student-select" class="form-control" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <option value="">-- Tạo mới hoàn toàn (Không hiện trên sơ đồ) --</option>
+                </select>
+            </div>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button id="btn-confirm-match" class="btn btn-primary w-100">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <!-- html2canvas for image export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Application Scripts -->
+    <script src="js/supabaseClient.js"></script>
     <script src="js/sampleData.js"></script>
     <script src="js/studentManager.js"></script>
     <script src="js/seatingGrid.js"></script>

@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         tbody.querySelectorAll('.btn-icon.delete').forEach(btn => {
             btn.addEventListener('click', () => {
                 const id = btn.getAttribute('data-id');
-                document.dispatchEvent(new CustomEvent('app:delete-student', { detail: { studentId: id } }));
+                document.dispatchEvent(new CustomEvent('app:delete-student', { detail: { studentId: id, source: 'info-table' } }));
             });
         });
     };
@@ -162,8 +162,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.addEventListener('app:delete-student', (e) => {
-        if (confirm('Bạn có chắc chắn muốn xóa học sinh này không?')) {
-            studentManager.removeStudent(e.detail.studentId);
+        const isFromInfoPage = e.detail.source === 'info-table';
+        const msg = isFromInfoPage 
+            ? 'Bạn có chắc chắn muốn xóa vĩnh viễn học sinh này khỏi danh sách?' 
+            : 'Bạn có muốn ẩn học sinh này khỏi sơ đồ lớp không? (Thông tin vẫn được giữ trong Danh sách)';
+            
+        if (confirm(msg)) {
+            studentManager.removeStudent(e.detail.studentId, isFromInfoPage);
             renderAll();
         }
     });
@@ -300,6 +305,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Save single student
+    let pendingStudentData = null; // To store data temporarily for match modal
+    const modalMatch = document.getElementById('modal-match-student');
+    
     document.getElementById('btn-save-student').addEventListener('click', () => {
         const name = document.getElementById('input-student-name').value;
         const dob = document.getElementById('input-student-dob').value;
@@ -307,20 +315,76 @@ document.addEventListener('DOMContentLoaded', async () => {
         const parentPhone = document.getElementById('input-student-parent-phone').value;
         
         const roleGroup = document.getElementById('form-group-add-role');
-        const role = (roleGroup && roleGroup.style.display !== 'none') ? document.getElementById('input-student-role').value : undefined;
+        const isFromInfoPage = (roleGroup && roleGroup.style.display === 'none');
+        const role = !isFromInfoPage ? document.getElementById('input-student-role').value : undefined;
 
         if (name.trim()) {
-            studentManager.addStudent(name, role, dob, phone, parentPhone);
-            document.getElementById('input-student-name').value = '';
-            document.getElementById('input-student-role').value = '';
-            document.getElementById('input-student-dob').value = '';
-            document.getElementById('input-student-phone').value = '';
-            document.getElementById('input-student-parent-phone').value = '';
-            modalAdd.classList.remove('show');
-            renderAll();
+            const closeAndRender = () => {
+                document.getElementById('input-student-name').value = '';
+                document.getElementById('input-student-role').value = '';
+                document.getElementById('input-student-dob').value = '';
+                document.getElementById('input-student-phone').value = '';
+                document.getElementById('input-student-parent-phone').value = '';
+                modalAdd.classList.remove('show');
+                renderAll();
+            };
+
+            if (isFromInfoPage) {
+                const matches = studentManager.findMatchingStudents(name);
+                if (matches.length === 1) {
+                    // Cập nhật người duy nhất khớp
+                    studentManager.updateStudent(matches[0].id, undefined, undefined, dob, phone, parentPhone, name);
+                    closeAndRender();
+                } else {
+                    // Hiện modal chọn người
+                    pendingStudentData = { name, dob, phone, parentPhone };
+                    document.getElementById('match-student-name-display').innerText = name;
+                    
+                    const selectEl = document.getElementById('match-student-select');
+                    selectEl.innerHTML = '<option value="">-- Tạo mới hoàn toàn (Không hiện trên sơ đồ) --</option>';
+                    
+                    // Thêm danh sách gợi ý vào select
+                    const options = matches.length > 0 ? matches : studentManager.getAssigned().concat(studentManager.getUnassigned());
+                    options.forEach(st => {
+                        const opt = document.createElement('option');
+                        opt.value = st.id;
+                        opt.textContent = `${st.name} ${st.role} - Đang xếp chỗ: ${st.seatId ? 'Có' : 'Không'}`;
+                        selectEl.appendChild(opt);
+                    });
+                    
+                    modalAdd.classList.remove('show');
+                    modalMatch.classList.add('show');
+                }
+            } else {
+                studentManager.addStudent(name, role, dob, phone, parentPhone, '', true);
+                closeAndRender();
+            }
         } else {
             alert('Vui lòng nhập tên học sinh');
         }
+    });
+
+    document.getElementById('btn-confirm-match').addEventListener('click', () => {
+        if (!pendingStudentData) return;
+        const selectedId = document.getElementById('match-student-select').value;
+        const { name, dob, phone, parentPhone } = pendingStudentData;
+        
+        if (selectedId) {
+            // Gán vào học sinh đã có
+            studentManager.updateStudent(selectedId, undefined, undefined, dob, phone, parentPhone, name);
+        } else {
+            // Tạo mới hoàn toàn (Không hiện sơ đồ)
+            studentManager.addStudent(name, undefined, dob, phone, parentPhone, name, false);
+        }
+        
+        document.getElementById('input-student-name').value = '';
+        document.getElementById('input-student-dob').value = '';
+        document.getElementById('input-student-phone').value = '';
+        document.getElementById('input-student-parent-phone').value = '';
+        
+        modalMatch.classList.remove('show');
+        pendingStudentData = null;
+        renderAll();
     });
 
     // Handle Enter key for Add Modal

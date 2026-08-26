@@ -20,15 +20,25 @@ class StudentManager {
             if (settingsError) throw settingsError;
             if (studentsError) throw studentsError;
 
-            if (students.length === 0 && this.sampleData.length > 0) {
-                this.students = JSON.parse(JSON.stringify(this.sampleData));
-                this.students.forEach(student => {
-                    student.role = this.formatRole(student.role || '');
-                    student.isLocked = Boolean(student.isLocked);
-                });
-                await this.writeStudents(this.students);
+            if (students.length === 0) {
+                // Nếu db rỗng (hoặc bị ẩn do RLS), ưu tiên lấy từ localStorage trước
+                const localData = localStorage.getItem('lop-x6-students');
+                if (localData) {
+                    this.students = JSON.parse(localData);
+                    await this.writeStudents(this.students);
+                } else if (this.sampleData.length > 0) {
+                    this.students = JSON.parse(JSON.stringify(this.sampleData));
+                    this.students.forEach(student => {
+                        student.role = this.formatRole(student.role || '');
+                        student.isLocked = Boolean(student.isLocked);
+                        student.showInChart = true;
+                    });
+                    await this.writeStudents(this.students);
+                }
             } else {
                 this.students = students.map(student => this.fromRow(student));
+                // Backup to localStorage
+                localStorage.setItem('lop-x6-students', JSON.stringify(this.students));
             }
 
             this.subscribeToRealtime();
@@ -46,6 +56,7 @@ class StudentManager {
                 this.students.forEach(student => {
                     student.role = this.formatRole(student.role || '');
                     student.isLocked = Boolean(student.isLocked);
+                    student.showInChart = true;
                 });
             }
             
@@ -58,12 +69,14 @@ class StudentManager {
         return {
             id: row.id,
             name: row.name,
+            fullName: row.full_name || '',
             role: this.formatRole(row.role || ''),
             dob: row.dob || '',
             phone: row.phone || '',
             parentPhone: row.parent_phone || '',
             seatId: row.seat_id || null,
-            isLocked: Boolean(row.is_locked)
+            isLocked: Boolean(row.is_locked),
+            showInChart: row.show_in_chart !== false
         };
     }
 
@@ -71,13 +84,15 @@ class StudentManager {
         return {
             id: student.id,
             classroom_id: this.classroomId,
-            name: student.name.trim(),
-            role: this.formatRole(student.role || ''),
+            name: student.name,
+            full_name: student.fullName || '',
+            role: student.role || '',
             dob: student.dob || null,
             phone: (student.phone || '').trim(),
             parent_phone: (student.parentPhone || '').trim(),
-            seat_id: student.seatId || null,
-            is_locked: Boolean(student.isLocked),
+            seat_id: student.seatId,
+            is_locked: student.isLocked,
+            show_in_chart: student.showInChart !== false,
             updated_at: new Date().toISOString()
         };
     }
@@ -133,8 +148,8 @@ class StudentManager {
 
     getAll() { return this.students; }
     getStudent(id) { return this.students.find(student => student.id === id); }
-    getAssigned() { return this.students.filter(student => student.seatId); }
-    getUnassigned() { return this.students.filter(student => !student.seatId); }
+    getAssigned() { return this.students.filter(student => student.seatId && student.showInChart !== false); }
+    getUnassigned() { return this.students.filter(student => !student.seatId && student.showInChart !== false); }
     getStudentAtSeat(seatId) { return this.students.find(student => student.seatId === seatId); }
 
     formatRole(role) {
@@ -143,23 +158,35 @@ class StudentManager {
         return `(${clean.replace(/^\(+|\)+$/g, '')})`;
     }
 
-    addStudent(name, role, dob = '', phone = '', parentPhone = '') {
+    addStudent(name, role, dob = '', phone = '', parentPhone = '', fullName = '', showInChart = true) {
         const id = `hs_${crypto.randomUUID()}`;
-        this.students.push({ id, name: name.trim(), role: role !== undefined ? this.formatRole(role) : '', dob: dob.trim(), phone: phone.trim(), parentPhone: parentPhone.trim(), seatId: null, isLocked: false });
+        this.students.push({ 
+            id, 
+            name: name.trim(), 
+            fullName: fullName.trim(),
+            role: role !== undefined ? this.formatRole(role) : '', 
+            dob: dob.trim(), 
+            phone: phone.trim(), 
+            parentPhone: parentPhone.trim(), 
+            seatId: null, 
+            isLocked: false,
+            showInChart: showInChart
+        });
         this.save();
         return id;
     }
 
-    updateStudent(id, name, role, dob = '', phone = '', parentPhone = '') {
+    updateStudent(id, name, role, dob = '', phone = '', parentPhone = '', fullName = '') {
         const student = this.getStudent(id);
         if (!student) return;
-        student.name = name.trim();
+        if (name !== undefined && name !== null) student.name = name.trim();
+        if (fullName !== undefined && fullName !== null) student.fullName = fullName.trim();
         if (role !== undefined) {
             student.role = this.formatRole(role);
         }
-        student.dob = dob.trim();
-        student.phone = phone.trim();
-        student.parentPhone = parentPhone.trim();
+        if (dob !== undefined) student.dob = dob.trim();
+        if (phone !== undefined) student.phone = phone.trim();
+        if (parentPhone !== undefined) student.parentPhone = parentPhone.trim();
         this.save();
     }
 
@@ -170,12 +197,21 @@ class StudentManager {
         this.save();
     }
 
-    removeStudent(id) {
-        this.students = this.students.filter(student => student.id !== id);
-        this.queue(async () => {
-            const { error } = await supabaseClient.from('classroom_students').delete().eq('id', id).eq('classroom_id', this.classroomId);
-            if (error) throw error;
-        });
+    removeStudent(id, completely = false) {
+        if (completely) {
+            this.students = this.students.filter(student => student.id !== id);
+            this.queue(async () => {
+                const { error } = await supabaseClient.from('classroom_students').delete().eq('id', id).eq('classroom_id', this.classroomId);
+                if (error) throw error;
+            });
+        } else {
+            const student = this.getStudent(id);
+            if (student) {
+                student.showInChart = false;
+                student.seatId = null;
+                this.save();
+            }
+        }
     }
 
     assignSeat(studentId, seatId) {
@@ -245,10 +281,40 @@ class StudentManager {
                 phone: '',
                 parentPhone: '',
                 seatId: null,
-                isLocked: false
+                isLocked: false,
+                showInChart: true
             });
         });
         this.save();
         return lines.length;
     }
+
+    findMatchingStudents(fullName) {
+        const upperFull = fullName.trim().toUpperCase();
+        if (!upperFull) return [];
+        const fullWords = upperFull.split(/\s+/);
+        
+        return this.students.filter(student => {
+            if (student.showInChart === false) return false;
+            if (!student.name) return false;
+            
+            const shortName = student.name.trim().toUpperCase();
+            
+            // Cách 1: Chứa chuỗi con trực tiếp (Ví dụ NGUYỄN QUỐC MINH chứa QUỐC MINH)
+            if (upperFull.includes(shortName)) return true;
+            
+            // Cách 2: Khớp từng từ theo đúng thứ tự (Ví dụ PHẠM PHAN BẢO NGỌC khớp PHẠM BẢO NGỌC)
+            const shortWords = shortName.split(/\s+/);
+            let matchIndex = 0;
+            for (let i = 0; i < fullWords.length; i++) {
+                if (fullWords[i] === shortWords[matchIndex]) {
+                    matchIndex++;
+                }
+                if (matchIndex === shortWords.length) return true;
+            }
+            
+            return false;
+        });
+    }
 }
+
