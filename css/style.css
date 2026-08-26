@@ -2,32 +2,46 @@
    CSS Reset & Variables
    ========================================================================== */
 :root {
-    --primary: #4F46E5;
-    --primary-hover: #4338CA;
-    --secondary: #F3F4F6;
-    --secondary-hover: #E5E7EB;
+    /* Ocean Blue Theme */
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+    --primary-light: #EFF6FF;
+    --secondary: #F8FAFC;
+    --secondary-hover: #F1F5F9;
     --danger: #EF4444;
     --danger-hover: #DC2626;
-    --text-main: #111827;
-    --text-muted: #6B7280;
-    --bg-main: #F9FAFB;
-    --bg-panel: #FFFFFF;
-    --border-color: #E5E7EB;
+    --success: #10B981;
     
-    --desk-border: #111827; /* Dark borders for the grid as in the image */
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    
+    /* Backgrounds */
+    --bg-main: #F8FAFC; /* Màu nền nhẹ dịu mắt */
+    --bg-panel: #FFFFFF;
+    --border-color: #E2E8F0;
+    
+    --desk-border: #334155; 
     --desk-bg: #FFFFFF;
     --desk-hover: #F0FDF4;
     
     --sidebar-width: 320px;
     --header-height: 70px;
     
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* Modern Shadows (Sâu hơn, mềm hơn) */
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -6px rgba(15, 23, 42, 0.08);
+    --shadow-float: 0 20px 40px -8px rgba(37, 99, 235, 0.15); /* Shadow nổi bật */
     
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
+    /* Modern Radii */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -55,8 +69,10 @@ body {
 
 .side-nav {
     width: 70px;
-    background-color: var(--bg-panel);
-    border-right: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -137,8 +153,10 @@ body {
    ========================================================================== */
 .app-header {
     height: var(--header-height);
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -200,22 +218,27 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 10px 18px;
     font-size: 0.875rem;
     font-weight: 500;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     border: none;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-normal);
     font-family: 'Inter', sans-serif;
+}
+.btn:active {
+    transform: scale(0.97);
 }
 
 .btn-primary {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 .btn-primary:hover {
-    background-color: var(--primary-hover);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -576,7 +599,7 @@ body {
 
 /* Draggable Student Card in Sidebar */
 .student-card {
-    background: white;
+    background-color: #FFFFFF;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 12px 16px;
@@ -584,13 +607,16 @@ body {
     align-items: center;
     justify-content: space-between;
     cursor: grab;
+    transition: all var(--transition-fast);
     box-shadow: var(--shadow-sm);
-    transition: all 0.2s;
+    position: relative;
+    user-select: none;
 }
 .student-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-1px);
+    transform: translateY(-3px) scale(1.02);
     box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+    z-index: 10;
 }
 .student-card:active {
     cursor: grabbing;
@@ -670,40 +696,45 @@ body {
 }
 
 /* ==========================================================================
-   Modals
+   Modals (Glassmorphism applied)
    ========================================================================== */
 .modal {
-    display: none;
-    position: fixed;
-    top: 0;
+    display: none; 
+    position: fixed; 
+    z-index: 100; 
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(15, 23, 42, 0.4); 
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity var(--transition-normal);
 }
+
 .modal.show {
     display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 1;
 }
 
 .modal-content {
-    background: white;
+    background-color: var(--bg-panel);
     border-radius: var(--radius-lg);
+    padding: 32px;
     width: 90%;
-    max-width: 400px;
-    padding: 24px;
-    box-shadow: var(--shadow-lg);
+    max-width: 480px;
+    box-shadow: var(--shadow-float);
     position: relative;
-    transform: translateY(-20px);
-    transition: transform 0.3s;
+    transform: translateY(20px) scale(0.95);
+    transition: transform var(--transition-normal);
+    border: 1px solid rgba(255, 255, 255, 0.8);
 }
+
 .modal.show .modal-content {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
 }
 
 .modal-lg {
@@ -1004,19 +1035,19 @@ body {
 
 .student-info-table th {
     color: var(--text-muted);
-    padding: 14px 18px;
+    padding: 16px 24px;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .student-info-table td {
-    padding: 14px 18px;
+    padding: 16px 24px;
     vertical-align: middle;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-main);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
 }
 
 .student-info-table tbody tr {
@@ -1033,13 +1064,13 @@ body {
 
 .role-badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
-    background-color: #FEF3C7;
-    color: #92400E;
-    border: 1px solid #FDE68A;
+    background-color: var(--primary-light);
+    color: var(--primary-hover);
+    border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 .text-empty {

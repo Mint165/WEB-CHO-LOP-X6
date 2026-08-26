@@ -355,8 +355,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Thêm từ trang Thông tin -> Không hiện trên sơ đồ (showInChart = false)
                 studentManager.addStudent(name, undefined, dob, phone, parentPhone, name, false);
             } else {
-                // Thêm từ trang Sơ đồ -> Hiện trên sơ đồ (showInChart = true)
-                studentManager.addStudent(name, role, dob, phone, parentPhone, '', true);
+                // Thêm từ trang Sơ đồ -> Hiện trên sơ đồ (showInChart = true) -> Ép hoa chữ cái (toUpperCase)
+                studentManager.addStudent(name.toUpperCase(), role, dob, phone, parentPhone, '', true);
             }
             
             document.getElementById('input-student-name').value = '';
@@ -396,8 +396,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Sửa từ trang Thông tin -> name ở input chính là fullName
                 studentManager.updateStudent(id, undefined, undefined, dob, phone, parentPhone, name);
             } else {
-                // Sửa từ trang Sơ đồ lớp -> chỉ sửa short name (tham số thứ 2)
-                studentManager.updateStudent(id, name, role, dob, phone, parentPhone, undefined);
+                // Sửa từ trang Sơ đồ lớp -> chỉ sửa short name và ép hoa (toUpperCase)
+                studentManager.updateStudent(id, name.toUpperCase(), role, dob, phone, parentPhone, undefined);
             }
             modalEdit.classList.remove('show');
             renderAll();
