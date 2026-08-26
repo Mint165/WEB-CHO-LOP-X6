@@ -45,6 +45,15 @@
         </header>
 
         <div class="main-content">
+            <!-- Mobile Sidebar Drawer Backdrop -->
+            <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+            
+            <!-- Mobile Sidebar Toggle FAB -->
+            <button id="btn-toggle-sidebar" class="mobile-sidebar-fab" title="Mở danh sách chờ">
+                <i class="fa-solid fa-users"></i>
+                <span id="mobile-unassigned-badge" class="fab-badge">0</span>
+            </button>
+
             <!-- CANVAS AREA (Seating Grid) -->
             <main class="canvas-area">
                 <div class="seating-wrapper" id="capture-area">
@@ -71,12 +80,15 @@
             </main>
 
             <!-- RIGHT SIDEBAR (Student List) -->
-            <aside class="sidebar">
+            <aside class="sidebar" id="app-sidebar">
                 <div class="sidebar-header">
-                    <h2>Danh sách chờ</h2>
-                    <div class="student-stats">
-                        Đã xếp: <span id="stat-assigned">0</span> / <span id="stat-total">0</span>
+                    <div>
+                        <h2>Danh sách chờ</h2>
+                        <div class="student-stats">
+                            Đã xếp: <span id="stat-assigned">0</span> / <span id="stat-total">0</span>
+                        </div>
                     </div>
+                    <button id="btn-close-sidebar" class="mobile-sidebar-close">&times;</button>
                 </div>
                 
                 <div class="sidebar-actions">

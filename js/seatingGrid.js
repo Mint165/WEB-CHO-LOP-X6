@@ -200,7 +200,14 @@ class SeatingGrid {
         // Update stats
         const total = studentManager.getAll().length;
         const assigned = studentManager.getAssigned().length;
+        const unassignedCount = total - assigned;
         document.getElementById('stat-total').innerText = total;
         document.getElementById('stat-assigned').innerText = assigned;
+        
+        const badge = document.getElementById('mobile-unassigned-badge');
+        if (badge) {
+            badge.innerText = unassignedCount;
+            badge.style.display = unassignedCount > 0 ? 'flex' : 'none';
+        }
     }
 }

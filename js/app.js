@@ -207,6 +207,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 5. Sidebar Listeners (Search)
     document.getElementById('search-input').addEventListener('input', renderAll);
 
+    // 5.1 Mobile Sidebar Toggle
+    const sidebar = document.getElementById('app-sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+    const btnCloseSidebar = document.getElementById('btn-close-sidebar');
+
+    const toggleSidebar = (forceState) => {
+        if (!sidebar || !sidebarBackdrop) return;
+        const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
+        sidebar.classList.toggle('open', isOpen);
+        sidebarBackdrop.classList.toggle('show', isOpen);
+    };
+
+    if (btnToggleSidebar) btnToggleSidebar.addEventListener('click', () => toggleSidebar(true));
+    if (btnCloseSidebar) btnCloseSidebar.addEventListener('click', () => toggleSidebar(false));
+    if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', () => toggleSidebar(false));
+
+
     // 6. Modals Logic
     const modalAdd = document.getElementById('modal-add-student');
     const modalEdit = document.getElementById('modal-edit-student');

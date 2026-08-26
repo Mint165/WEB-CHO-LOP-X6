@@ -9,6 +9,10 @@ class DragDropManager {
         
         this.draggedStudentId = null;
         this.sourceSeatId = null; // null if from sidebar
+        
+        // Tap-to-place state
+        this.selectedStudentId = null;
+        this.selectedSourceSeatId = null;
     }
 
     init() {
@@ -123,5 +127,90 @@ class DragDropManager {
                 document.dispatchEvent(new CustomEvent('app:state-changed'));
             }
         });
+
+        // Setup Tap-to-Place / Click interactions
+        document.addEventListener('click', (e) => {
+            // Ignore clicks on action buttons
+            if (e.target.closest('button') || e.target.closest('.btn-icon')) return;
+
+            // 1. Click on a draggable student
+            const draggable = e.target.closest('.draggable');
+            if (draggable) {
+                const studentId = draggable.dataset.studentId;
+                const seatElement = draggable.closest('.seat');
+                const sourceSeatId = seatElement ? seatElement.dataset.seatId : null;
+
+                // If already selected, deselect
+                if (this.selectedStudentId === studentId) {
+                    this.clearSelection();
+                    return;
+                }
+
+                // If another is selected, check if we are clicking a seat with a student (Swap intent)
+                if (this.selectedStudentId && seatElement) {
+                    this.handleTapDrop(seatElement.dataset.seatId);
+                    return;
+                }
+
+                // Otherwise, select this student
+                this.clearSelection();
+                this.selectedStudentId = studentId;
+                this.selectedSourceSeatId = sourceSeatId;
+                draggable.classList.add('is-selected');
+                
+                // Highlight valid targets visually
+                document.querySelectorAll('.seat').forEach(s => s.classList.add('tap-target'));
+                
+                return;
+            }
+
+            // 2. Click on an empty seat
+            const seat = e.target.closest('.seat');
+            if (seat && this.selectedStudentId) {
+                this.handleTapDrop(seat.dataset.seatId);
+                return;
+            }
+
+            // 3. Click on the sidebar to unassign
+            const sidebar = e.target.closest('.sidebar');
+            if (sidebar && this.selectedStudentId && this.selectedSourceSeatId) {
+                this.studentManager.unassignSeat(this.selectedStudentId);
+                document.dispatchEvent(new CustomEvent('app:state-changed'));
+                this.clearSelection();
+                return;
+            }
+            
+            // 4. Click elsewhere clears selection
+            this.clearSelection();
+        });
+    }
+
+    clearSelection() {
+        this.selectedStudentId = null;
+        this.selectedSourceSeatId = null;
+        document.querySelectorAll('.is-selected').forEach(el => el.classList.remove('is-selected'));
+        document.querySelectorAll('.tap-target').forEach(el => el.classList.remove('tap-target'));
+    }
+
+    handleTapDrop(targetSeatId) {
+        if (!this.selectedStudentId) return;
+
+        const studentId = this.selectedStudentId;
+        const sourceSeatId = this.selectedSourceSeatId;
+        const existingStudent = this.studentManager.getStudentAtSeat(targetSeatId);
+
+        if (existingStudent) {
+            if (sourceSeatId) {
+                this.studentManager.swapSeats(studentId, existingStudent.id);
+            } else {
+                this.studentManager.unassignSeat(existingStudent.id);
+                this.studentManager.assignSeat(studentId, targetSeatId);
+            }
+        } else {
+            this.studentManager.assignSeat(studentId, targetSeatId);
+        }
+        
+        document.dispatchEvent(new CustomEvent('app:state-changed'));
+        this.clearSelection();
     }
 }
