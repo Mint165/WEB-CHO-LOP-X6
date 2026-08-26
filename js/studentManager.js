@@ -37,8 +37,32 @@ class StudentManager {
                 }
             } else {
                 this.students = students.map(student => this.fromRow(student));
+                
+                // Tự động cập nhật fullName và dob từ sampleData nếu dữ liệu Supabase bị thiếu
+                let hasUpdates = false;
+                this.students.forEach(student => {
+                    if (!student.fullName || !student.dob) {
+                        const sampleMatch = this.sampleData.find(s => s.name === student.name || s.id === student.id);
+                        if (sampleMatch) {
+                            if (!student.fullName && sampleMatch.fullName) {
+                                student.fullName = sampleMatch.fullName;
+                                hasUpdates = true;
+                            }
+                            if (!student.dob && sampleMatch.dob) {
+                                student.dob = sampleMatch.dob;
+                                hasUpdates = true;
+                            }
+                        }
+                    }
+                });
+
                 // Backup to localStorage
                 localStorage.setItem('lop-x6-students', JSON.stringify(this.students));
+                
+                // Ghi lại lên Supabase nếu có thông tin mới
+                if (hasUpdates) {
+                    this.save();
+                }
             }
 
             this.subscribeToRealtime();
@@ -51,6 +75,28 @@ class StudentManager {
             const localData = localStorage.getItem('lop-x6-students');
             if (localData) {
                 this.students = JSON.parse(localData);
+                
+                // Tự động cập nhật fullName và dob từ sampleData nếu dữ liệu cũ chưa có
+                let hasUpdates = false;
+                this.students.forEach(student => {
+                    if (!student.fullName || !student.dob) {
+                        const sampleMatch = this.sampleData.find(s => s.name === student.name || s.id === student.id);
+                        if (sampleMatch) {
+                            if (!student.fullName && sampleMatch.fullName) {
+                                student.fullName = sampleMatch.fullName;
+                                hasUpdates = true;
+                            }
+                            if (!student.dob && sampleMatch.dob) {
+                                student.dob = sampleMatch.dob;
+                                hasUpdates = true;
+                            }
+                        }
+                    }
+                });
+                if (hasUpdates) {
+                    this.save();
+                }
+                
             } else if (this.sampleData.length > 0) {
                 this.students = JSON.parse(JSON.stringify(this.sampleData));
                 this.students.forEach(student => {
@@ -149,9 +195,19 @@ class StudentManager {
     getAll() { return this.students; }
     getAllSorted() {
         return [...this.students].sort((a, b) => {
-            const nameA = (a.fullName || a.name || '').toLowerCase();
-            const nameB = (b.fullName || b.name || '').toLowerCase();
-            return nameA.localeCompare(nameB);
+            const getSortTokens = (student) => {
+                const fullName = (student.fullName || student.name || '').trim();
+                const words = fullName.split(/\s+/);
+                const firstName = words.pop() || '';
+                const rest = words.join(' ');
+                return { firstName: firstName.toLowerCase(), rest: rest.toLowerCase() };
+            };
+            const tokensA = getSortTokens(a);
+            const tokensB = getSortTokens(b);
+            
+            const cmp = tokensA.firstName.localeCompare(tokensB.firstName, 'vi');
+            if (cmp !== 0) return cmp;
+            return tokensA.rest.localeCompare(tokensB.rest, 'vi');
         });
     }
     getStudent(id) { return this.students.find(student => student.id === id); }
