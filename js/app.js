@@ -98,9 +98,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const phoneHtml = student.phone || '<span class="text-empty">Chưa có</span>';
             const parentPhoneHtml = student.parentPhone || '<span class="text-empty">Chưa có</span>';
 
+            const rawName = (student.fullName || student.name).trim();
+            const titleCaseName = rawName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
             tr.innerHTML = `
                 <td style="text-align: center; font-weight: 500; color: var(--text-muted);">${index + 1}</td>
-                <td style="font-weight: 600;">${student.fullName || student.name}</td>
+                <td style="font-weight: 600;">${titleCaseName}</td>
                 <td>${formatDateVN(student.dob)}</td>
                 <td>${phoneHtml}</td>
                 <td>${parentPhoneHtml}</td>
@@ -247,20 +250,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         const student = studentManager.getStudent(e.detail.studentId);
         if (student) {
             editStudentId.value = student.id;
-            editStudentName.value = student.fullName || student.name;
+            const isFromInfoPage = e.detail.source === 'info-table' || document.getElementById('page-student-info').classList.contains('active-page');
+            
+            // Gán dữ liệu vào form tuỳ thuộc vào trang
+            if (isFromInfoPage) {
+                editStudentName.value = student.fullName || student.name;
+            } else {
+                editStudentName.value = student.name;
+            }
+            
             editStudentRole.value = student.role ? student.role.replace(/[()]/g, '') : '';
             editStudentDob.value = student.dob || '';
             editStudentPhone.value = student.phone || '';
             editStudentParentPhone.value = student.parentPhone || '';
 
-            // Ẩn/hiện ô nhập chức vụ tùy theo context
+            // Ẩn/hiện các ô nhập tuỳ theo context
             const roleGroup = document.getElementById('form-group-edit-role');
-            if (roleGroup) {
-                if (e.detail.source === 'info-table' || document.getElementById('page-student-info').classList.contains('active-page')) {
-                    roleGroup.style.display = 'none';
-                } else {
-                    roleGroup.style.display = 'block';
-                }
+            const dobGroup = document.getElementById('form-group-edit-dob');
+            const phoneGroup = document.getElementById('form-group-edit-phone');
+            const parentPhoneGroup = document.getElementById('form-group-edit-parent-phone');
+
+            if (isFromInfoPage) {
+                if (roleGroup) roleGroup.style.display = 'none';
+                if (dobGroup) dobGroup.style.display = 'block';
+                if (phoneGroup) phoneGroup.style.display = 'block';
+                if (parentPhoneGroup) parentPhoneGroup.style.display = 'block';
+            } else {
+                if (roleGroup) roleGroup.style.display = 'block';
+                if (dobGroup) dobGroup.style.display = 'none';
+                if (phoneGroup) phoneGroup.style.display = 'none';
+                if (parentPhoneGroup) parentPhoneGroup.style.display = 'none';
             }
 
             modalEdit.classList.add('show');
@@ -273,14 +292,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-add-student').addEventListener('click', () => {
         const roleGroup = document.getElementById('form-group-add-role');
+        const dobGroup = document.getElementById('form-group-add-dob');
+        const phoneGroup = document.getElementById('form-group-add-phone');
+        const parentPhoneGroup = document.getElementById('form-group-add-parent-phone');
+
         if (roleGroup) roleGroup.style.display = 'block';
+        if (dobGroup) dobGroup.style.display = 'none';
+        if (phoneGroup) phoneGroup.style.display = 'none';
+        if (parentPhoneGroup) parentPhoneGroup.style.display = 'none';
+
         modalAdd.classList.add('show');
         document.getElementById('input-student-name').focus();
     });
 
     document.getElementById('btn-add-student-info').addEventListener('click', () => {
         const roleGroup = document.getElementById('form-group-add-role');
+        const dobGroup = document.getElementById('form-group-add-dob');
+        const phoneGroup = document.getElementById('form-group-add-phone');
+        const parentPhoneGroup = document.getElementById('form-group-add-parent-phone');
+
         if (roleGroup) roleGroup.style.display = 'none';
+        if (dobGroup) dobGroup.style.display = 'block';
+        if (phoneGroup) phoneGroup.style.display = 'block';
+        if (parentPhoneGroup) parentPhoneGroup.style.display = 'block';
+
         document.getElementById('input-student-role').value = '';
         modalAdd.classList.add('show');
         document.getElementById('input-student-name').focus();
@@ -354,9 +389,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const roleGroup = document.getElementById('form-group-edit-role');
         const role = (roleGroup && roleGroup.style.display !== 'none') ? editStudentRole.value : undefined;
+        const isFromInfoPage = (roleGroup && roleGroup.style.display === 'none');
 
         if (name.trim()) {
-            studentManager.updateStudent(id, name, role, dob, phone, parentPhone);
+            if (isFromInfoPage) {
+                // Sửa từ trang Thông tin -> name ở input chính là fullName
+                studentManager.updateStudent(id, undefined, undefined, dob, phone, parentPhone, name);
+            } else {
+                // Sửa từ trang Sơ đồ lớp -> chỉ sửa short name (tham số thứ 2)
+                studentManager.updateStudent(id, name, role, dob, phone, parentPhone, undefined);
+            }
             modalEdit.classList.remove('show');
             renderAll();
         } else {
