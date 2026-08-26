@@ -147,6 +147,13 @@ class StudentManager {
     }
 
     getAll() { return this.students; }
+    getAllSorted() {
+        return [...this.students].sort((a, b) => {
+            const nameA = (a.fullName || a.name || '').toLowerCase();
+            const nameB = (b.fullName || b.name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+    }
     getStudent(id) { return this.students.find(student => student.id === id); }
     getAssigned() { return this.students.filter(student => student.seatId && student.showInChart !== false); }
     getUnassigned() { return this.students.filter(student => !student.seatId && student.showInChart !== false); }
