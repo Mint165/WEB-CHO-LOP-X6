@@ -11,28 +11,47 @@ class StudentManager {
     }
 
     async init() {
-        const [{ data: settings, error: settingsError }, { data: students, error: studentsError }] = await Promise.all([
-            supabaseClient.from('classroom_settings').select('*').eq('id', this.classroomId).single(),
-            supabaseClient.from('classroom_students').select('*').eq('classroom_id', this.classroomId).order('created_at')
-        ]);
+        try {
+            const [{ data: settings, error: settingsError }, { data: students, error: studentsError }] = await Promise.all([
+                supabaseClient.from('classroom_settings').select('*').eq('id', this.classroomId).single(),
+                supabaseClient.from('classroom_students').select('*').eq('classroom_id', this.classroomId).order('created_at')
+            ]);
 
-        if (settingsError) throw settingsError;
-        if (studentsError) throw studentsError;
+            if (settingsError) throw settingsError;
+            if (studentsError) throw studentsError;
 
-        if (students.length === 0 && this.sampleData.length > 0) {
-            this.students = JSON.parse(JSON.stringify(this.sampleData));
-            this.students.forEach(student => {
-                student.role = this.formatRole(student.role || '');
-                student.isLocked = Boolean(student.isLocked);
-            });
-            await this.writeStudents(this.students);
-        } else {
-            this.students = students.map(student => this.fromRow(student));
+            if (students.length === 0 && this.sampleData.length > 0) {
+                this.students = JSON.parse(JSON.stringify(this.sampleData));
+                this.students.forEach(student => {
+                    student.role = this.formatRole(student.role || '');
+                    student.isLocked = Boolean(student.isLocked);
+                });
+                await this.writeStudents(this.students);
+            } else {
+                this.students = students.map(student => this.fromRow(student));
+            }
+
+            this.subscribeToRealtime();
+            document.dispatchEvent(new Event('app:state-changed'));
+            return settings;
+        } catch (error) {
+            console.warn('Lỗi kết nối Supabase, chuyển sang sử dụng local storage/dữ liệu mẫu:', error);
+            
+            // Fallback to local storage or sample data
+            const localData = localStorage.getItem('lop-x6-students');
+            if (localData) {
+                this.students = JSON.parse(localData);
+            } else if (this.sampleData.length > 0) {
+                this.students = JSON.parse(JSON.stringify(this.sampleData));
+                this.students.forEach(student => {
+                    student.role = this.formatRole(student.role || '');
+                    student.isLocked = Boolean(student.isLocked);
+                });
+            }
+            
+            document.dispatchEvent(new Event('app:state-changed'));
+            return { title: 'SƠ ĐỒ LỚP 12/6', teacher_info: 'Giáo viên chủ nhiệm: ...' };
         }
-
-        this.subscribeToRealtime();
-        document.dispatchEvent(new Event('app:state-changed'));
-        return settings;
     }
 
     fromRow(row) {
@@ -107,6 +126,8 @@ class StudentManager {
     }
 
     save() {
+        // Luôn lưu bản sao vào localStorage để dự phòng
+        localStorage.setItem('lop-x6-students', JSON.stringify(this.students));
         this.writeStudents(this.students);
     }
 
@@ -124,7 +145,7 @@ class StudentManager {
 
     addStudent(name, role, dob = '', phone = '', parentPhone = '') {
         const id = `hs_${crypto.randomUUID()}`;
-        this.students.push({ id, name: name.trim(), role: this.formatRole(role), dob: dob.trim(), phone: phone.trim(), parentPhone: parentPhone.trim(), seatId: null, isLocked: false });
+        this.students.push({ id, name: name.trim(), role: role !== undefined ? this.formatRole(role) : '', dob: dob.trim(), phone: phone.trim(), parentPhone: parentPhone.trim(), seatId: null, isLocked: false });
         this.save();
         return id;
     }
@@ -133,7 +154,9 @@ class StudentManager {
         const student = this.getStudent(id);
         if (!student) return;
         student.name = name.trim();
-        student.role = this.formatRole(role);
+        if (role !== undefined) {
+            student.role = this.formatRole(role);
+        }
         student.dob = dob.trim();
         student.phone = phone.trim();
         student.parentPhone = parentPhone.trim();
