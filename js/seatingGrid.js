@@ -80,6 +80,7 @@ class SeatingGrid {
                 content.dataset.studentId = student.id;
                 content.title = 'Kéo để đổi chỗ hoặc nhấp đúp để chỉnh sửa';
                 content.ondblclick = (e) => {
+                    if (!document.body.classList.contains('is-admin')) return;
                     e.stopPropagation();
                     document.dispatchEvent(new CustomEvent('app:edit-student', { detail: { studentId: student.id } }));
                 };

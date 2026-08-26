@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const exporterManager = new ExporterManager('capture-area');
 
+    const adminManager = new AdminManager();
+    await adminManager.init();
+
     // 1.5 Routing Logic
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -430,9 +433,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mainTitleEl = document.getElementById('chart-main-title');
     const teacherInfoEl = document.getElementById('chart-teacher-info');
     const applyClassroomSettings = (settings) => {
-        if (!settings) return;
-        mainTitleEl.textContent = settings.title;
-        teacherInfoEl.textContent = settings.teacher_info;
+        if (settings.title) {
+            mainTitleEl.textContent = settings.title;
+        }
+        if (settings.teacher_info) {
+            teacherInfoEl.textContent = settings.teacher_info;
+        }
+        if (settings.grid_cols && settings.grid_rows) {
+            // Update grid structure if needed, currently skipping deep sync to avoid reset on load
+            // seatingGrid.updateStructure(settings.grid_cols, settings.grid_rows);
+        }
+        
+        // Pass settings to AdminManager to handle toggles
+        adminManager.applySettings(settings);
     };
     const loadClassroomSettings = async () => {
         const { data, error } = await supabaseClient.from('classroom_settings').select('*').eq('id', 'lop-x6').single();

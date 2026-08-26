@@ -22,7 +22,7 @@
             </div>
             <ul class="nav-links">
                 <li><a href="#" class="nav-link active" data-page="page-seating" title="Sơ Đồ Lớp"><i class="fa-solid fa-users-viewfinder"></i></a></li>
-                <li><a href="#" class="nav-link" data-page="page-student-info" title="Nhập Thông Tin"><i class="fa-solid fa-address-card"></i></a></li>
+                <li><a href="#" class="nav-link" data-page="page-student-info" title="Nhập Thông Tin" id="nav-student-info"><i class="fa-solid fa-address-card"></i></a></li>
             </ul>
         </nav>
 
@@ -34,11 +34,11 @@
             <div class="header-left">
                 <h1><i class="fa-solid fa-school"></i> <span>Quản Lý Sơ Đồ Lớp</span></h1>
             </div>
-            <div class="header-right">
-                <button id="btn-randomize" class="btn btn-secondary" title="Xáo trộn ngẫu nhiên"><i class="fa-solid fa-dice"></i> Xáo trộn</button>
-                <button id="btn-rotate" class="btn btn-secondary" title="Đảo vị trí các dãy (1->2->3->4->1)"><i class="fa-solid fa-arrows-rotate"></i> Đảo Dãy</button>
-                <button id="btn-clear" class="btn btn-danger" title="Xóa sơ đồ hiện tại"><i class="fa-solid fa-trash-can"></i> Làm mới</button>
-                <div class="separator"></div>
+                <button id="btn-admin-unlock" class="btn btn-secondary" title="Đăng nhập Admin"><i class="fa-solid fa-lock"></i></button>
+                <button id="btn-randomize" class="btn btn-secondary admin-only" title="Xáo trộn ngẫu nhiên"><i class="fa-solid fa-dice"></i> Xáo trộn</button>
+                <button id="btn-rotate" class="btn btn-secondary admin-only" title="Đảo vị trí các dãy (1->2->3->4->1)"><i class="fa-solid fa-arrows-rotate"></i> Đảo Dãy</button>
+                <button id="btn-clear" class="btn btn-danger admin-only" title="Xóa sơ đồ hiện tại"><i class="fa-solid fa-trash-can"></i> Làm mới</button>
+                <div class="separator admin-only"></div>
                 <button id="btn-export-img" class="btn btn-primary"><i class="fa-solid fa-image"></i> Xuất Ảnh</button>
                 <button id="btn-print" class="btn btn-primary"><i class="fa-solid fa-print"></i> In</button>
             </div>
@@ -96,7 +96,7 @@
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" id="search-input" placeholder="Tìm kiếm học sinh...">
                     </div>
-                    <div class="action-buttons">
+                    <div class="action-buttons admin-only">
                         <button id="btn-add-student" class="btn btn-sm btn-outline"><i class="fa-solid fa-plus"></i> Thêm</button>
                         <button id="btn-import-bulk" class="btn btn-sm btn-outline"><i class="fa-solid fa-file-import"></i> Nhập DS</button>
                     </div>
@@ -127,7 +127,7 @@
                             <i class="fa-solid fa-magnifying-glass"></i>
                             <input type="text" id="student-info-search" placeholder="Tìm theo tên, ngày sinh, SĐT...">
                         </div>
-                        <button id="btn-add-student-info" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm Học Sinh</button>
+                        <button id="btn-add-student-info" class="btn btn-primary admin-only"><i class="fa-solid fa-plus"></i> Thêm Học Sinh</button>
                     </div>
                 </header>
                 <div class="student-info-content">
@@ -139,8 +139,8 @@
                                         <th style="width: 60px; text-align: center;">STT</th>
                                         <th>Họ và Tên</th>
                                         <th>Ngày Sinh</th>
-                                        <th>SĐT Cá Nhân</th>
-                                        <th>SĐT Phụ Huynh</th>
+                                        <th class="phone-column">SĐT Cá Nhân</th>
+                                        <th class="phone-column">SĐT Phụ Huynh</th>
                                         <th style="width: 110px; text-align: center;">Thao Tác</th>
                                     </tr>
                                 </thead>
@@ -226,6 +226,68 @@
         </div>
     </div>
 
+    <!-- Unlock Admin Modal -->
+    <div id="modal-unlock" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fa-solid fa-lock"></i> Mở Khóa Chỉnh Sửa</h2>
+            <p style="margin-bottom: 15px; color: var(--text-secondary);">Bạn cần nhập mật khẩu để thay đổi dữ liệu.</p>
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="input-admin-password" placeholder="Nhập mật khẩu...">
+                <p id="unlock-error" style="color: var(--danger-color); margin-top: 5px; display: none; font-size: 13px;">Mật khẩu không đúng!</p>
+            </div>
+            <button id="btn-submit-unlock" class="btn btn-primary w-100">Mở Khóa</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal -->
+    <div id="modal-admin-dashboard" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fa-solid fa-screwdriver-wrench"></i> Bảng Điều Khiển Admin</h2>
+            
+            <div class="admin-settings-list">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Yêu cầu mật khẩu</h4>
+                        <p>Bật/tắt việc yêu cầu mật khẩu để chỉnh sửa. Nếu tắt, ai cũng có thể chỉnh sửa.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-require-password" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Ẩn SĐT & Ngày Sinh</h4>
+                        <p>Ẩn thông tin cá nhân của học sinh ở chế độ xem thường.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-hide-phones">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Ẩn Tab Thông Tin</h4>
+                        <p>Chỉ hiển thị sơ đồ, ẩn hoàn toàn tab danh sách học sinh.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-hide-tabs">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-color);">
+            <button id="btn-admin-logout" class="btn btn-danger w-100"><i class="fa-solid fa-right-from-bracket"></i> Thoát quyền Admin</button>
+        </div>
+    </div>
+
+
 
 
     <!-- Scripts -->
@@ -239,6 +301,7 @@
     <script src="js/seatingGrid.js"></script>
     <script src="js/dragdrop.js"></script>
     <script src="js/exporter.js"></script>
+    <script src="js/adminManager.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -18,6 +18,11 @@ class DragDropManager {
     init() {
         // Setup Drag start on all draggables
         document.addEventListener('dragstart', (e) => {
+            if (!document.body.classList.contains('is-admin')) {
+                e.preventDefault();
+                return;
+            }
+
             const draggable = e.target.closest('.draggable');
             if (draggable) {
                 this.draggedStudentId = draggable.dataset.studentId;
@@ -130,6 +135,8 @@ class DragDropManager {
 
         // Setup Tap-to-Place / Click interactions
         document.addEventListener('click', (e) => {
+            if (!document.body.classList.contains('is-admin')) return;
+
             // Ignore clicks on action buttons
             if (e.target.closest('button') || e.target.closest('.btn-icon')) return;
 
