@@ -281,6 +281,18 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
+
+                <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                    <div class="setting-info">
+                        <h4>Đổi mật khẩu Admin</h4>
+                        <p>Nhập mật khẩu mới để thay đổi mật khẩu mở khóa (tối thiểu 6 ký tự).</p>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 4px;">
+                        <input type="password" id="input-new-admin-password" placeholder="Nhập mật khẩu mới..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                        <button id="btn-change-admin-password" class="btn btn-primary" style="white-space: nowrap; padding: 8px 14px; font-size: 13px;">Lưu</button>
+                    </div>
+                    <p id="change-pwd-status" style="font-size: 13px; margin: 4px 0 0 0; display: none; font-weight: 500;"></p>
+                </div>
             </div>
             
             <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-color);">

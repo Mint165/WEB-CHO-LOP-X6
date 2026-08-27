@@ -50,8 +50,8 @@ class AdminManager {
         if (isAdmin || !this.settings.require_password) {
             document.body.classList.add('is-admin');
             if (this.btnUnlock) {
-                this.btnUnlock.innerHTML = '<i class="fa-solid fa-gear"></i>';
-                this.btnUnlock.title = "Bảng Điều Khiển Admin";
+                this.btnUnlock.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+                this.btnUnlock.title = "Bảng Điều Khiển Admin (Đang mở khóa)";
             }
             if (titleEl) titleEl.setAttribute('contenteditable', 'true');
             if (teacherEl) teacherEl.setAttribute('contenteditable', 'true');
@@ -59,7 +59,7 @@ class AdminManager {
             document.body.classList.remove('is-admin');
             if (this.btnUnlock) {
                 this.btnUnlock.innerHTML = '<i class="fa-solid fa-lock"></i>';
-                this.btnUnlock.title = "Đăng nhập Admin";
+                this.btnUnlock.title = "Đăng nhập Admin (Đang khóa)";
             }
             if (titleEl) titleEl.removeAttribute('contenteditable');
             if (teacherEl) teacherEl.removeAttribute('contenteditable');
@@ -141,6 +141,9 @@ class AdminManager {
                 this.errorMsg.style.display = 'block';
             } else {
                 this.modalUnlock.classList.remove('show');
+                if (this.modalDashboard) {
+                    this.modalDashboard.classList.add('show');
+                }
             }
         };
 
@@ -151,6 +154,47 @@ class AdminManager {
         if (this.inputPassword) {
             this.inputPassword.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') submitLogin();
+            });
+        }
+
+        // Handle Change Password in Dashboard
+        const inputNewPassword = document.getElementById('input-new-admin-password');
+        const btnChangePassword = document.getElementById('btn-change-admin-password');
+        const changePwdStatus = document.getElementById('change-pwd-status');
+
+        if (btnChangePassword && inputNewPassword) {
+            btnChangePassword.addEventListener('click', async () => {
+                const newPassword = inputNewPassword.value.trim();
+                if (!newPassword || newPassword.length < 6) {
+                    if (changePwdStatus) {
+                        changePwdStatus.style.display = 'block';
+                        changePwdStatus.style.color = 'var(--danger-color)';
+                        changePwdStatus.textContent = 'Mật khẩu phải có ít nhất 6 ký tự!';
+                    }
+                    return;
+                }
+
+                btnChangePassword.disabled = true;
+                btnChangePassword.textContent = 'Đang lưu...';
+
+                const { data, error } = await window.supabaseClient.auth.updateUser({
+                    password: newPassword
+                });
+
+                btnChangePassword.disabled = false;
+                btnChangePassword.textContent = 'Lưu mật khẩu';
+
+                if (changePwdStatus) {
+                    changePwdStatus.style.display = 'block';
+                    if (error) {
+                        changePwdStatus.style.color = 'var(--danger-color)';
+                        changePwdStatus.textContent = 'Lỗi: ' + error.message;
+                    } else {
+                        changePwdStatus.style.color = 'var(--success-color, #10b981)';
+                        changePwdStatus.textContent = 'Đã đổi mật khẩu thành công!';
+                        inputNewPassword.value = '';
+                    }
+                }
             });
         }
 
