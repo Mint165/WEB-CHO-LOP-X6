@@ -2,36 +2,36 @@
    CSS Reset & Variables
    ========================================================================== */
 :root {
-    /* Ocean Blue Theme */
+    /* BioMedix Sky & Ocean Blue Theme */
     --primary: #2563EB;
     --primary-hover: #1D4ED8;
-    --primary-light: #EFF6FF;
-    --secondary: #F8FAFC;
-    --secondary-hover: #F1F5F9;
+    --primary-light: #EBF4FD;
+    --secondary: #F0F7FE;
+    --secondary-hover: #E2EFFF;
     --danger: #EF4444;
     --danger-hover: #DC2626;
     --success: #10B981;
     
-    --text-main: #0F172A;
-    --text-muted: #64748B;
+    --text-main: #0F2238;
+    --text-muted: #526E8C;
     
     /* Backgrounds */
-    --bg-main: #F8FAFC; /* Màu nền nhẹ dịu mắt */
+    --bg-main: #EDF5FC; /* Màu nền pastel xanh da trời nhẹ dịu BioMedix */
     --bg-panel: #FFFFFF;
-    --border-color: #E2E8F0;
+    --border-color: #D3E5F7;
     
-    --desk-border: #334155; 
+    --desk-border: #2D4C76; 
     --desk-bg: #FFFFFF;
-    --desk-hover: #F0FDF4;
+    --desk-hover: #E0F2FE;
     
     --sidebar-width: 320px;
     --header-height: 70px;
     
-    /* Modern Shadows (Sâu hơn, mềm hơn) */
-    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -6px rgba(15, 23, 42, 0.08);
-    --shadow-float: 0 20px 40px -8px rgba(37, 99, 235, 0.15); /* Shadow nổi bật */
+    /* Modern Shadows */
+    --shadow-sm: 0 1px 3px rgba(15, 34, 56, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(15, 34, 56, 0.07), 0 2px 4px -2px rgba(15, 34, 56, 0.03);
+    --shadow-lg: 0 12px 24px -4px rgba(15, 34, 56, 0.1), 0 4px 12px -6px rgba(15, 34, 56, 0.06);
+    --shadow-float: 0 20px 40px -8px rgba(37, 99, 235, 0.18);
     
     /* Modern Radii */
     --radius-sm: 6px;
@@ -69,22 +69,37 @@ body {
 
 .side-nav {
     width: 70px;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(255, 255, 255, 0.5);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 20px;
+    padding-top: 16px;
     box-shadow: var(--shadow-sm);
     z-index: 20;
 }
 
 .nav-logo {
-    font-size: 28px;
-    color: var(--primary);
-    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+}
+
+.nav-logo-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    transition: transform var(--transition-normal);
+}
+
+.nav-logo-img:hover {
+    transform: scale(1.08) rotate(3deg);
 }
 
 .nav-links {
@@ -284,7 +299,7 @@ body {
     -webkit-overflow-scrolling: touch;
     padding: 32px;
     display: block;
-    background-color: #E2E8F0; /* Slightly darker background to make white paper pop */
+    background-color: #DCEAF7; /* BioMedix cloud-blue canvas backdrop */
 }
 
 /* The wrapper that will be exported to image */
