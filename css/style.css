@@ -281,9 +281,9 @@ body {
 .canvas-area {
     flex: 1;
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 32px;
-    display: flex;
-    justify-content: center;
+    display: block;
     background-color: #E2E8F0; /* Slightly darker background to make white paper pop */
 }
 
@@ -295,6 +295,7 @@ body {
     border-radius: var(--radius-sm);
     display: flex;
     flex-direction: column;
+    width: fit-content;
     min-width: 1100px;
     margin: 0 auto;
 }
@@ -1216,11 +1217,16 @@ body {
 
     .canvas-area {
         padding: 16px 12px 90px 12px;
-        align-items: flex-start;
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .seating-wrapper {
-        min-width: 800px;
+        min-width: 780px;
+        width: fit-content;
+        margin: 0 auto;
         padding: 20px 16px;
     }
 
