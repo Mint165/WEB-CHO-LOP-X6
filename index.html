@@ -14,6 +14,8 @@
     <link rel="icon" type="image/png" href="assets/logo.png">
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- Fund Management Stylesheet -->
+    <link rel="stylesheet" href="css/fund.css">
 </head>
 <body>
     <div class="app-layout">
@@ -25,6 +27,7 @@
             <ul class="nav-links">
                 <li><a href="#" class="nav-link active" data-page="page-seating" title="Sơ Đồ Lớp"><i class="fa-solid fa-users-viewfinder"></i></a></li>
                 <li><a href="#" class="nav-link" data-page="page-student-info" title="Nhập Thông Tin" id="nav-student-info"><i class="fa-solid fa-address-card"></i></a></li>
+                <li><a href="#" class="nav-link" data-page="page-fund" title="Thủ Quỹ & Quản Lý Phạt" id="nav-fund"><i class="fa-solid fa-vault"></i></a></li>
             </ul>
         </nav>
 
@@ -155,6 +158,434 @@
                     </div>
                 </div>
             </div>
+
+            <!-- PAGE: FUND MANAGEMENT -->
+            <div id="page-fund" class="page-view" style="display: none;">
+                <!-- Top Fund Header -->
+                <header class="fund-header">
+                    <div class="fund-header-title">
+                        <h2><i class="fa-solid fa-coins"></i> <span>Quản Lý Quỹ Phạt Lớp Học</span></h2>
+                        <span id="current-role-badge" class="role-badge badge-student"><i class="fa-solid fa-user-graduate"></i> Học sinh</span>
+                    </div>
+                    <div class="fund-header-actions">
+                        <button id="btn-fund-logout" class="btn btn-sm btn-outline admin-only" title="Đăng xuất quyền chỉnh sửa">
+                            <i class="fa-solid fa-lock"></i> Đăng xuất
+                        </button>
+                        <button id="btn-open-add-violation" class="btn btn-primary can-record-vio">
+                            <i class="fa-solid fa-plus-circle"></i> Ghi nhận vi phạm
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Sub Navigation Tabs -->
+                <nav class="fund-subnav">
+                    <button class="fund-tab-btn active" data-tab="overview">
+                        <i class="fa-solid fa-chart-pie"></i> Tổng quan (Dashboard)
+                    </button>
+                    <button class="fund-tab-btn" data-tab="violations">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Sổ vi phạm
+                    </button>
+                    <button class="fund-tab-btn" data-tab="students">
+                        <i class="fa-solid fa-users"></i> Hồ sơ học sinh
+                    </button>
+                    <button class="fund-tab-btn" data-tab="debts">
+                        <i class="fa-solid fa-bell"></i> Theo dõi nợ & Thu tiền
+                    </button>
+                    <button class="fund-tab-btn" data-tab="rules">
+                        <i class="fa-solid fa-gavel"></i> Quy định mức phạt
+                    </button>
+                    <button class="fund-tab-btn" data-tab="audit">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động
+                    </button>
+                </nav>
+
+                <!-- Main Scrollable Body Area -->
+                <main class="fund-body">
+                    
+                    <!-- -------------------------------------------------------------
+                         TAB 1: TỔNG QUAN / DASHBOARD
+                         ------------------------------------------------------------- -->
+                    <div id="tab-overview" class="fund-tab-content active">
+                        <!-- Top Toolbar / Timeframe -->
+                        <div class="d-flex justify-between align-center mb-4" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                            <h3 style="font-size: 1.1rem; font-weight: 700; color: #1E293B;">Báo Cáo Tổng Hợp Quỹ Lớp</h3>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="font-size: 0.85rem; color: #64748B;">Thời gian:</span>
+                                <select id="fund-timeframe-select" class="select-filter">
+                                    <option value="all">Toàn bộ năm học</option>
+                                    <option value="month">Tháng hiện tại</option>
+                                    <option value="week">7 ngày gần đây</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 4 KPI Stats Cards -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon icon-payable">
+                                    <i class="fa-solid fa-money-bill-transfer"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Tổng tiền phải thu</div>
+                                    <div class="stat-number" id="stat-total-payable">0đ</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon icon-collected">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Đã thu thực tế</div>
+                                    <div class="stat-number text-success" id="stat-total-collected" style="color: #10B981;">0đ</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon icon-remaining">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Còn thiếu / Chưa nộp</div>
+                                    <div class="stat-number text-danger" id="stat-total-remaining" style="color: #EF4444;">0đ</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon icon-count">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Tổng số lần vi phạm</div>
+                                    <div class="stat-number" id="stat-total-violations">0 lần</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collection Rate Progress Bar -->
+                        <div class="progress-card">
+                            <div class="progress-header">
+                                <h3><i class="fa-solid fa-chart-line text-primary"></i> Tiến độ hoàn thành thu nợ quỹ phạt</h3>
+                                <span id="fund-progress-percent" class="progress-rate-badge">0%</span>
+                            </div>
+                            <div class="fund-progress-track">
+                                <div id="fund-progress-fill" class="fund-progress-fill" style="width: 0%;"></div>
+                            </div>
+                            <div id="fund-progress-details" class="progress-footer">
+                                <span><i class="fa-solid fa-circle-check text-success"></i> Đã thu: <b>0đ</b></span>
+                                <span><i class="fa-solid fa-circle-exclamation text-danger"></i> Còn thiếu: <b>0đ</b></span>
+                            </div>
+                        </div>
+
+                        <!-- Biểu Đồ Thống Kê (Charts) -->
+                        <div class="dashboard-charts-grid">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3><i class="fa-solid fa-chart-column text-primary"></i> Tiền phạt theo thời gian (7 ngày qua)</h3>
+                                </div>
+                                <div class="chart-wrapper">
+                                    <canvas id="chart-revenue"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3><i class="fa-solid fa-chart-pie text-warning"></i> Cơ cấu phân bổ loại vi phạm</h3>
+                                </div>
+                                <div class="chart-wrapper">
+                                    <canvas id="chart-types"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3><i class="fa-solid fa-ranking-star text-danger"></i> Top học sinh vi phạm nhiều nhất</h3>
+                                </div>
+                                <div class="chart-wrapper">
+                                    <canvas id="chart-top-violators"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top 5 Vi Phạm & Vi Phạm Gần Đây -->
+                        <div class="dashboard-bottom-grid">
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <h3><i class="fa-solid fa-fire text-danger"></i> Top 5 lỗi vi phạm phổ biến nhất</h3>
+                                </div>
+                                <div id="overview-top-types">
+                                    <!-- Injected by JS -->
+                                </div>
+                            </div>
+
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <h3><i class="fa-solid fa-clock-rotate-left text-primary"></i> Vi phạm ghi nhận gần đây</h3>
+                                </div>
+                                <div id="overview-recent-violations">
+                                    <!-- Injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- -------------------------------------------------------------
+                         TAB 2: SỔ VI PHẠM (VIOLATIONS)
+                         ------------------------------------------------------------- -->
+                    <div id="tab-violations" class="fund-tab-content">
+                        <div class="table-card">
+                            <div class="table-toolbar">
+                                <div class="toolbar-left">
+                                    <div class="search-input-wrapper">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        <input type="text" id="vio-search-input" placeholder="Tìm kiếm theo tên HS, lỗi, ghi chú...">
+                                    </div>
+                                    <select id="vio-status-filter" class="select-filter">
+                                        <option value="all">Tất cả trạng thái</option>
+                                        <option value="unpaid">🔴 Chưa nộp</option>
+                                        <option value="paid">✅ Đã nộp</option>
+                                        <option value="waived">🛡️ Được miễn</option>
+                                        <option value="cancelled">🚫 Đã hủy</option>
+                                    </select>
+                                    <select id="vio-category-filter" class="select-filter">
+                                        <option value="all">Tất cả loại vi phạm</option>
+                                    </select>
+                                    <select id="vio-sort-filter" class="select-filter">
+                                        <option value="newest">Mới nhất trước</option>
+                                        <option value="oldest">Cũ nhất trước</option>
+                                        <option value="amount-desc">Mức phạt cao nhất</option>
+                                        <option value="amount-asc">Mức phạt thấp nhất</option>
+                                    </select>
+                                </div>
+                                <div class="toolbar-right">
+                                    <span id="violations-count-display" style="font-size: 0.85rem; color: #64748B; font-weight: 500;"></span>
+                                </div>
+                            </div>
+
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>👤 Học sinh</th>
+                                            <th>📅 Ngày vi phạm</th>
+                                            <th>⚠️ Loại vi phạm</th>
+                                            <th>📝 Ghi chú</th>
+                                            <th>💰 Mức phạt</th>
+                                            <th>👨‍🏫 Người ghi nhận</th>
+                                            <th>🔴 Trạng thái</th>
+                                            <th style="text-align: right;">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="violations-tbody">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- -------------------------------------------------------------
+                         TAB 3: HỒ SƠ HỌC SINH (STUDENT LEDGERS)
+                         ------------------------------------------------------------- -->
+                    <div id="tab-students" class="fund-tab-content">
+                        <div class="d-flex justify-between align-center mb-4" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                            <div class="search-input-wrapper" style="max-width: 380px;">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="fund-student-search" placeholder="Tìm kiếm theo tên học sinh, chức vụ...">
+                            </div>
+                            <span style="font-size: 0.85rem; color: #64748B;">Bấm vào thẻ học sinh để xem sổ tay & lịch sử chi tiết</span>
+                        </div>
+
+                        <div class="students-grid" id="fund-students-grid">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- -------------------------------------------------------------
+                         TAB 4: THEO DÕI NỢ & THU TIỀN (DEBT TRACKING)
+                         ------------------------------------------------------------- -->
+                    <div id="tab-debts" class="fund-tab-content">
+                        <!-- Summary Banner -->
+                        <div class="debt-summary-banner">
+                            <div class="debt-banner-info">
+                                <h3><i class="fa-solid fa-bell"></i> Danh Sách Học Sinh Chưa Hoàn Thành Quỹ Phạt</h3>
+                                <p>Theo dõi các khoản tiền phạt nợ đọng cần thu và xác nhận biên lai nộp tiền</p>
+                            </div>
+                            <div class="debt-banner-stats">
+                                <div class="debt-banner-stat-item">
+                                    <span>Tổng số học sinh nợ</span>
+                                    <b id="debt-summary-count" style="color: #FBBF24;">0 học sinh</b>
+                                </div>
+                                <div class="debt-banner-stat-item">
+                                    <span>Tổng tiền còn thiếu</span>
+                                    <b id="debt-summary-total">0đ</b>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Outstanding Debtors List -->
+                        <div class="debt-students-list" id="debt-students-list">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <!-- Payment Transactions History -->
+                        <div class="table-card mt-5" style="margin-top: 32px;">
+                            <div class="panel-header" style="padding: 16px 20px; border-bottom: 1px solid var(--fund-border);">
+                                <h3><i class="fa-solid fa-receipt text-primary"></i> Lịch Sử Giao Dịch & Biên Nhận Đã Thu</h3>
+                            </div>
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã biên nhận</th>
+                                            <th>Ngày nộp</th>
+                                            <th>Học sinh</th>
+                                            <th>Số tiền đã nộp</th>
+                                            <th>Phương thức</th>
+                                            <th>Người thu</th>
+                                            <th>Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="payment-history-tbody">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- -------------------------------------------------------------
+                         TAB 5: QUY ĐỊNH MỨC PHẠT (FINE RULES)
+                         ------------------------------------------------------------- -->
+                    <div id="tab-rules" class="fund-tab-content">
+                        <div class="table-card">
+                            <div class="table-toolbar">
+                                <div class="toolbar-left">
+                                    <h3 style="font-size: 1rem; font-weight: 700; color: #1E293B;"><i class="fa-solid fa-gavel text-primary"></i> Bảng Quy Định Mức Phạt Lớp Học</h3>
+                                </div>
+                                <div class="toolbar-right">
+                                    <button id="btn-open-add-rule" class="btn btn-primary btn-sm admin-only">
+                                        <i class="fa-solid fa-plus"></i> Thêm mức phạt mới
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên loại lỗi vi phạm</th>
+                                            <th>Nhóm danh mục</th>
+                                            <th>Mức phạt mặc định</th>
+                                            <th class="admin-only">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rules-tbody">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Panel Quản Lý Dữ Liệu Năm Học Mới -->
+                        <div class="panel-card admin-only" style="margin-top: 24px; border-left: 4px solid #4F46E5;">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-sliders text-primary"></i> Quản Lý Dữ Liệu & Khởi Tạo Năm Học Mới</h3>
+                                <span style="font-size: 0.8rem; color: #64748B;">Chỉ quản trị viên đã đăng nhập (tk: admin) mới có quyền thao tác</span>
+                            </div>
+                            <div style="padding: 10px 0;">
+                                <p style="font-size: 0.9rem; color: #475569; margin-bottom: 16px;">
+                                    Trước khi bắt đầu năm học mới, bạn có thể xóa toàn bộ dữ liệu mẫu thử nghiệm để đưa tổng quỹ về 0đ sạch sẽ.
+                                </p>
+                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button id="btn-clear-fund-data" class="btn btn-danger btn-sm">
+                                        <i class="fa-solid fa-broom"></i> Xóa sạch vi phạm (Bắt đầu năm học mới 0đ)
+                                    </button>
+                                    <button id="btn-restore-fund-data" class="btn btn-secondary btn-sm">
+                                        <i class="fa-solid fa-rotate-left"></i> Khôi phục dữ liệu mẫu thử nghiệm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- -------------------------------------------------------------
+                         TAB 6: NHẬT KÝ HOẠT ĐỘNG (AUDIT LOGS)
+                         ------------------------------------------------------------- -->
+                    <div id="tab-audit" class="fund-tab-content">
+                        <div class="panel-card">
+                            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+                                <div>
+                                    <h3><i class="fa-solid fa-shield-halved text-primary"></i> Nhật Ký Thay Đổi & Lưu Vết Dữ Liệu</h3>
+                                    <span style="font-size: 0.8rem; color: #64748B;">Đảm bảo tính minh bạch tuyệt đối khi nhiều người cùng quản lý</span>
+                                </div>
+                                <button id="btn-clear-audit-logs" class="btn btn-danger btn-sm admin-only" title="Xóa toàn bộ nhật ký">
+                                    <i class="fa-solid fa-trash"></i> Xóa toàn bộ nhật ký
+                                </button>
+                            </div>
+                            <div id="audit-log-stream">
+                                <!-- Injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODALS (CÁC CỬA SỔ POPUP)
+         ========================================================================== -->
+
+    <!-- Modal 1: Thêm Học Sinh (Sơ đồ) -->
+    <div id="modal-add-student" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Thêm Học Sinh</h2>
+            <div class="form-group">
+                <label>Họ và Tên</label>
+                <input type="text" id="input-student-name" placeholder="VD: Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+                <label>Chức vụ (Tuỳ chọn)</label>
+                <input type="text" id="input-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
+            </div>
+            <button id="btn-save-student" class="btn btn-primary w-100">Lưu</button>
+        </div>
+    </div>
+
+    <!-- Modal 2: Chỉnh Sửa Học Sinh (Sơ đồ) -->
+    <div id="modal-edit-student" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Chỉnh Sửa Học Sinh</h2>
+            <input type="hidden" id="edit-student-id">
+            <div class="form-group">
+                <label>Họ và Tên</label>
+                <input type="text" id="edit-student-name" placeholder="VD: Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+                <label>Chức vụ (Tuỳ chọn)</label>
+                <input type="text" id="edit-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
+            </div>
+            <button id="btn-update-student" class="btn btn-primary w-100"><i class="fa-solid fa-check"></i> Cập nhật</button>
+        </div>
+    </div>
+
+    <!-- Modal 3: Nhập Danh Sách Nhanh Bulk -->
+    <div id="modal-import" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-modal">&times;</span>
+            <h2>Nhập Danh Sách Nhanh</h2>
+            <p class="modal-help">Dán danh sách học sinh từ Excel hoặc Word (mỗi học sinh 1 dòng).<br>Để thêm chức vụ, dùng dấu phẩy (VD: <i>Nguyễn Văn A, Lớp Trưởng</i>).</p>
+            <textarea id="input-bulk-data" rows="10" placeholder="Nguyễn Văn A&#10;Trần Thị B, LPHT&#10;Lê Văn C"></textarea>
+            <button id="btn-save-bulk" class="btn btn-primary w-100">Nhập danh sách</button>
+        </div>
+    </div>
+
+    <!-- Modal 4: Ghi Nhận Vi Phạm Mới (Fund) -->
         </div>
     </div>
 
@@ -305,6 +736,359 @@
 
 
 
+    <!-- Fund Management Modals -->
+    <div id="modal-add-violation" class="modal">
+        <div class="modal-content modal-md">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fa-solid fa-triangle-exclamation text-danger"></i> Ghi Nhận Vi Phạm Lớp Học</h2>
+            
+            <div class="form-group">
+                <label>👤 Học sinh vi phạm <span class="text-danger">*</span></label>
+                <select id="input-vio-student" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>📅 Ngày & giờ vi phạm <span class="text-danger">*</span></label>
+                <input type="datetime-local" id="input-vio-date" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>⚠️ Loại vi phạm (Chọn quy định để tự điền mức phạt) <span class="text-danger">*</span></label>
+                <select id="input-vio-type" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>💰 Mức phạt (VNĐ) <span class="text-danger">*</span></label>
+                <input type="number" id="input-vio-amount" placeholder="VD: 10000" class="form-control" step="1000">
+            </div>
+
+            <div class="form-group">
+                <label>📝 Mô tả / Ghi chú chi tiết</label>
+                <input type="text" id="input-vio-note" placeholder="VD: Đi muộn 15 phút tiết 1, không có lí do..." class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>👨‍🏫 Người ghi nhận</label>
+                <input type="text" id="input-vio-recorder" placeholder="VD: Lớp trưởng, Sao đỏ..." class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>🔴 Trạng thái ban đầu</label>
+                <select id="input-vio-status" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <option value="unpaid">🔴 Chưa nộp</option>
+                    <option value="paid">✅ Đã nộp ngay</option>
+                    <option value="waived">🛡️ Được miễn</option>
+                </select>
+            </div>
+
+            <button id="btn-save-violation" class="btn btn-primary w-100" style="margin-top: 10px;">
+                <i class="fa-solid fa-check"></i> Lưu Bản Ghi Vi Phạm
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal 5: Chỉnh Sửa Vi Phạm (Fund) -->
+    <div id="modal-edit-violation" class="modal">
+        <div class="modal-content modal-md">
+            <span class="close-modal">&times;</span>
+            <h2>Chỉnh Sửa Bản Ghi Vi Phạm</h2>
+            <input type="hidden" id="edit-vio-id">
+            
+            <p style="margin-bottom: 14px; font-size: 0.95rem;">Học sinh: <b id="edit-vio-student-name" class="text-primary"></b></p>
+
+            <div class="form-group">
+                <label>Loại vi phạm</label>
+                <input type="text" id="edit-vio-type" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Mức phạt (VNĐ)</label>
+                <input type="number" id="edit-vio-amount" class="form-control" step="1000">
+            </div>
+
+            <div class="form-group">
+                <label>Mô tả / Ghi chú</label>
+                <input type="text" id="edit-vio-note" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Người ghi nhận</label>
+                <input type="text" id="edit-vio-recorder" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Trạng thái</label>
+                <select id="edit-vio-status" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <option value="unpaid">🔴 Chưa nộp</option>
+                    <option value="paid">✅ Đã nộp</option>
+                    <option value="waived">🛡️ Được miễn</option>
+                    <option value="cancelled">🚫 Đã hủy</option>
+                </select>
+            </div>
+
+            <button id="btn-update-violation" class="btn btn-primary w-100">
+                <i class="fa-solid fa-floppy-disk"></i> Cập Nhật Vi Phạm
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal 6: Thu Tiền Nợ / Xác Nhận Thanh Toán (Fund) -->
+    <div id="modal-collect-payment" class="modal">
+        <div class="modal-content modal-md">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fa-solid fa-money-bill-wave text-success"></i> Thu Tiền Quỹ Phạt</h2>
+            <input type="hidden" id="pay-student-id">
+
+            <div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 14px; border-radius: 8px; margin-bottom: 16px;">
+                <div style="font-size: 0.85rem; color: #065F46;">Học sinh nộp tiền:</div>
+                <h3 id="pay-student-name" style="color: #047857; font-size: 1.2rem; margin-top: 2px;"></h3>
+            </div>
+
+            <div class="form-group">
+                <label>💰 Số tiền thực nộp (VNĐ) <span class="text-danger">*</span></label>
+                <input type="number" id="pay-amount-input" class="form-control" style="font-size: 1.1rem; font-weight: 700; color: #047857;" step="1000">
+            </div>
+
+            <div class="form-group">
+                <label>📅 Ngày nộp tiền</label>
+                <input type="date" id="pay-date-input" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>💳 Hình thức thanh toán</label>
+                <select id="pay-method-select" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <option value="Tiền mặt">💵 Tiền mặt</option>
+                    <option value="Chuyển khoản">📱 Chuyển khoản ngân hàng / MoMo</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>👨‍💼 Người thu tiền</label>
+                <input type="text" id="pay-collector-input" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>📝 Ghi chú biên lai</label>
+                <input type="text" id="pay-note-input" value="Thanh toán tiền phạt vi phạm nề nếp" class="form-control">
+            </div>
+
+            <button id="btn-confirm-payment" class="btn btn-primary w-100" style="background: #10B981; border: none; margin-top: 8px;">
+                <i class="fa-solid fa-receipt"></i> Xác Nhận Thu Tiền & Xuất Biên Lai
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal 7: Hồ Sơ Cá Nhân & Lịch Sử Từng Học Sinh (Student Ledger) -->
+    <div id="modal-student-ledger" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close-modal">&times;</span>
+            <div class="d-flex align-center gap-3" style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+                <div class="student-avatar-large" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div>
+                    <h2 id="ledger-student-name" style="margin: 0; font-size: 1.35rem;"></h2>
+                    <span id="ledger-student-role" style="font-size: 0.85rem; color: #64748B;"></span>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+                <div class="stat-card" style="padding: 12px 14px;">
+                    <div class="stat-content">
+                        <div class="stat-title">Số lần vi phạm</div>
+                        <div class="stat-number" id="ledger-stat-violations" style="font-size: 1.2rem;">0</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="padding: 12px 14px;">
+                    <div class="stat-content">
+                        <div class="stat-title">Tổng tiền phạt</div>
+                        <div class="stat-number text-primary" id="ledger-stat-total" style="font-size: 1.2rem;">0đ</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="padding: 12px 14px;">
+                    <div class="stat-content">
+                        <div class="stat-title">Đã nộp</div>
+                        <div class="stat-number text-success" id="ledger-stat-paid" style="font-size: 1.2rem;">0đ</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="padding: 12px 14px;">
+                    <div class="stat-content">
+                        <div class="stat-title">Còn nợ</div>
+                        <div class="stat-number text-danger" id="ledger-stat-remaining" style="font-size: 1.2rem;">0đ</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="font-size: 1rem; font-weight: 700; color: #1E293B;"><i class="fa-solid fa-timeline text-primary"></i> Dòng Thời Gian Vi Phạm & Nộp Tiền</h3>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-ledger-add-vio" class="btn btn-sm btn-outline"><i class="fa-solid fa-plus"></i> Thêm vi phạm</button>
+                    <button id="btn-ledger-pay" class="btn btn-sm btn-primary" style="background: #10B981;"><i class="fa-solid fa-money-bill-wave"></i> Thu tiền nợ</button>
+                </div>
+            </div>
+
+            <div class="data-table-wrapper" style="max-height: 320px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Loại vi phạm</th>
+                            <th>Ghi chú</th>
+                            <th>Mức phạt</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledger-history-tbody">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 8: Thêm & Chỉnh Sửa Quy Định Mức Phạt (Rule Modal) -->
+    <div id="modal-add-rule" class="modal">
+        <div class="modal-content modal-sm" style="max-width: 440px;">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-rule-title"><i class="fa-solid fa-gavel text-primary"></i> Thêm Quy Định Mức Phạt</h2>
+            <input type="hidden" id="input-rule-id">
+            <div class="form-group">
+                <label>Tên loại lỗi vi phạm <span class="text-danger">*</span></label>
+                <input type="text" id="input-rule-name" placeholder="VD: Đi muộn, Không mặc đồng phục..." class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Mức phạt mặc định (VNĐ) <span class="text-danger">*</span></label>
+                <input type="number" id="input-rule-amount" value="10000" class="form-control" step="1000">
+            </div>
+            <div class="form-group">
+                <label>Nhóm danh mục</label>
+                <input type="text" id="input-rule-category" value="Nề nếp" placeholder="VD: Nề nếp, Học tập, Vệ sinh, Chuyên cần..." class="form-control">
+            </div>
+            <button id="btn-save-rule" class="btn btn-primary w-100" style="margin-top: 8px;">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu Quy Định
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal 9: Xem & In Phiếu Thu / Biên Nhận (Receipt Modal) -->
+    <div id="modal-receipt" class="modal">
+        <div class="modal-content modal-md" style="padding: 24px;">
+            <span class="close-modal">&times;</span>
+            
+            <div class="receipt-wrapper" id="printable-receipt">
+                <div class="receipt-header">
+                    <div class="receipt-school">TRƯỜNG THPT • LỚP 12/6</div>
+                    <div class="receipt-title">BIÊN NHẬN THU QUỸ</div>
+                    <span class="receipt-number-badge" id="receipt-number">BL-1001</span>
+                </div>
+
+                <div class="receipt-meta-grid">
+                    <div class="receipt-meta-item">
+                        <span>Học sinh nộp:</span><br>
+                        <b id="receipt-student-name">Nguyễn Văn A</b>
+                    </div>
+                    <div class="receipt-meta-item" style="text-align: right;">
+                        <span>Ngày thu:</span><br>
+                        <b id="receipt-date">24/08/2026</b>
+                    </div>
+                    <div class="receipt-meta-item">
+                        <span>Hình thức:</span><br>
+                        <b id="receipt-method">Tiền mặt</b>
+                    </div>
+                    <div class="receipt-meta-item" style="text-align: right;">
+                        <span>Người lập phiếu:</span><br>
+                        <b id="receipt-collector-name">Khánh Quân (LT)</b>
+                    </div>
+                </div>
+
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;">#</th>
+                            <th>Nội dung thu</th>
+                            <th style="text-align: right;">Số tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody id="receipt-items-tbody">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+
+                <div class="receipt-total-box">
+                    <span>TỔNG TIỀN ĐÃ THANH TOÁN:</span>
+                    <b id="receipt-total-amount">30.000đ</b>
+                </div>
+
+                <div class="receipt-status-stamp">
+                    <span class="stamp-paid"><i class="fa-solid fa-stamp"></i> ĐÃ THANH TOÁN</span>
+                </div>
+
+                <div style="font-size: 0.75rem; color: #64748B; font-style: italic; margin-bottom: 20px;" id="receipt-note">
+                    Ghi chú: Thanh toán tiền phạt vi phạm nề nếp
+                </div>
+
+                <div class="receipt-signatures">
+                    <div>
+                        <div class="sign-title">Người nộp tiền</div>
+                        <div class="sign-name">(Ký & ghi rõ họ tên)</div>
+                    </div>
+                    <div>
+                        <div class="sign-title">Thủ quỹ / Người thu</div>
+                        <div class="sign-name">(Ký & ghi rõ họ tên)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="receipt-print-actions" style="margin-top: 20px; display: flex; gap: 10px;">
+                <button id="btn-print-receipt" class="btn btn-primary flex-1" style="width: 100%;">
+                    <i class="fa-solid fa-print"></i> In Biên Nhận / Lưu PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 10: Xác Thực Mật Khẩu Quản Trị (tk: admin, mk: g3) -->
+    <div id="modal-auth-login" class="modal">
+        <div class="modal-content modal-sm" style="max-width: 400px; padding: 26px;">
+            <span class="close-modal">&times;</span>
+            <div class="text-center mb-3" style="text-align: center; margin-bottom: 18px;">
+                <div style="width: 54px; height: 54px; border-radius: 14px; background: linear-gradient(135deg, #EEF2FF, #E0E7FF); color: #4F46E5; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1E293B; margin: 0;">Xác Thực Quyền Chỉnh Sửa</h2>
+                <p style="font-size: 0.82rem; color: #64748B; margin-top: 4px;">Vui lòng nhập tài khoản quản trị để mở khóa chức năng chỉnh sửa quỹ lớp</p>
+            </div>
+
+            <div id="auth-error-msg" style="display: none; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 16px; font-weight: 500;">
+                Tên đăng nhập hoặc mật khẩu không chính xác!
+            </div>
+
+            <div class="form-group">
+                <label style="font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 6px; display: block;"><i class="fa-solid fa-user"></i> Tên tài khoản</label>
+                <input type="text" id="auth-username" class="form-control" placeholder="Nhập tên tài khoản" autocomplete="off" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+                <label style="font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 6px; display: block;"><i class="fa-solid fa-key"></i> Mật khẩu</label>
+                <input type="password" id="auth-password" class="form-control" placeholder="Nhập mật khẩu" autocomplete="off" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
+            </div>
+
+            <button id="btn-auth-submit" class="btn btn-primary w-100" style="margin-top: 20px; padding: 12px; font-weight: 600; font-size: 0.95rem;">
+                <i class="fa-solid fa-lock-open"></i> Đăng Nhập & Xác Thực
+            </button>
+            
+            <div style="font-size: 0.78rem; color: #94A3B8; text-align: center; margin-top: 14px;">
+                💡 <i>Học sinh chỉ có quyền xem, không cần đăng nhập.</i>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Scripts -->
     <!-- html2canvas for image export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -316,6 +1100,8 @@
     <script src="js/seatingGrid.js"></script>
     <script src="js/dragdrop.js"></script>
     <script src="js/exporter.js"></script>
+    <script src="js/fundManager.js"></script>
+    <script src="js/fundUI.js"></script>
     <script src="js/adminManager.js"></script>
     <script src="js/app.js"></script>
 </body>

@@ -36,6 +36,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Không thể khởi tạo AdminManager:', err);
     });
 
+    const fundManager = new FundManager(studentManager);
+    fundManager.init().catch(err => {
+        console.error('Không thể khởi tạo FundManager:', err);
+    });
+
+    const fundUI = new FundUI(fundManager, studentManager);
+    fundUI.init();
+
     // 1.5 Routing Logic
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -52,11 +60,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 page.classList.remove('active-page');
             });
             const targetEl = document.getElementById(targetPage);
-            targetEl.style.display = 'flex';
-            targetEl.classList.add('active-page');
+            if (targetEl) {
+                targetEl.style.display = 'flex';
+                targetEl.classList.add('active-page');
+            }
 
             if (targetPage === 'page-student-info') {
                 renderStudentInfoTable();
+            } else if (targetPage === 'page-fund') {
+                fundUI.renderAll();
             }
         });
     });
