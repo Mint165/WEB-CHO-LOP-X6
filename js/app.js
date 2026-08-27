@@ -195,9 +195,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Helper to prompt unlock if not admin
+    const ensureAdmin = () => {
+        if (!document.body.classList.contains('is-admin')) {
+            const btnUnlock = document.getElementById('btn-admin-unlock');
+            if (btnUnlock) btnUnlock.click();
+            return false;
+        }
+        return true;
+    };
+
     // 4. Toolbar Event Listeners
     document.getElementById('btn-randomize').addEventListener('click', () => {
-        if (!document.body.classList.contains('is-admin')) return;
+        if (!ensureAdmin()) return;
         const lockedCount = studentManager.getAll().filter(s => s.isLocked && s.seatId).length;
         const msg = lockedCount > 0 
             ? `Xáo trộn chỗ ngồi ngẫu nhiên? (${lockedCount} học sinh có khóa 🔒 sẽ được giữ nguyên vị trí)`
@@ -210,8 +220,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btn-rotate').addEventListener('click', () => {
-        if (!document.body.classList.contains('is-admin')) return;
-        if (confirm('Đảo vị trí các tổ (Tổ 1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1)?')) {
+        if (!ensureAdmin()) return;
+        if (confirm('Đổi vị trí các dãy bàn (Dãy 1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1)?')) {
             const cols = seatingGrid.getColumnIds();
             studentManager.rotateColumns(cols);
             renderAll();
@@ -219,8 +229,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btn-clear').addEventListener('click', () => {
-        if (!document.body.classList.contains('is-admin')) return;
-        if (confirm('Bạn có chắc chắn muốn đưa tất cả học sinh về danh sách chờ?')) {
+        if (!ensureAdmin()) return;
+        if (confirm('Bạn có chắc chắn muốn xóa toàn bộ vị trí chỗ ngồi để xếp lại từ đầu?')) {
             studentManager.clearAllSeats();
             renderAll();
         }
