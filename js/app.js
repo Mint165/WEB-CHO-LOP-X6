@@ -32,7 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const exporterManager = new ExporterManager('capture-area');
 
     const adminManager = new AdminManager();
-    await adminManager.init();
+    adminManager.init().catch(err => {
+        console.error('Không thể khởi tạo AdminManager:', err);
+    });
 
     // 1.5 Routing Logic
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -123,6 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Add event listeners for edit and delete buttons in the table
         tbody.querySelectorAll('.btn-icon.edit').forEach(btn => {
             btn.addEventListener('click', () => {
+                if (!document.body.classList.contains('is-admin')) return;
                 const id = btn.getAttribute('data-id');
                 document.dispatchEvent(new CustomEvent('app:edit-student', { detail: { studentId: id } }));
             });
@@ -130,6 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         tbody.querySelectorAll('.btn-icon.delete').forEach(btn => {
             btn.addEventListener('click', () => {
+                if (!document.body.classList.contains('is-admin')) return;
                 const id = btn.getAttribute('data-id');
                 document.dispatchEvent(new CustomEvent('app:delete-student', { detail: { studentId: id, source: 'info-table' } }));
             });
@@ -181,6 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 4. Toolbar Event Listeners
     document.getElementById('btn-randomize').addEventListener('click', () => {
+        if (!document.body.classList.contains('is-admin')) return;
         const lockedCount = studentManager.getAll().filter(s => s.isLocked && s.seatId).length;
         const msg = lockedCount > 0 
             ? `Xáo trộn chỗ ngồi ngẫu nhiên? (${lockedCount} học sinh có khóa 🔒 sẽ được giữ nguyên vị trí)`
@@ -193,6 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btn-rotate').addEventListener('click', () => {
+        if (!document.body.classList.contains('is-admin')) return;
         if (confirm('Đảo vị trí các tổ (Tổ 1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1)?')) {
             const cols = seatingGrid.getColumnIds();
             studentManager.rotateColumns(cols);
@@ -201,6 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btn-clear').addEventListener('click', () => {
+        if (!document.body.classList.contains('is-admin')) return;
         if (confirm('Bạn có chắc chắn muốn đưa tất cả học sinh về danh sách chờ?')) {
             studentManager.clearAllSeats();
             renderAll();
@@ -294,6 +301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btn-add-student').addEventListener('click', () => {
+        if (!document.body.classList.contains('is-admin')) return;
         const roleGroup = document.getElementById('form-group-add-role');
         const dobGroup = document.getElementById('form-group-add-dob');
         const phoneGroup = document.getElementById('form-group-add-phone');
@@ -309,6 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btn-add-student-info').addEventListener('click', () => {
+        if (!document.body.classList.contains('is-admin')) return;
         const roleGroup = document.getElementById('form-group-add-role');
         const dobGroup = document.getElementById('form-group-add-dob');
         const phoneGroup = document.getElementById('form-group-add-phone');
@@ -325,6 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btn-import-bulk').addEventListener('click', () => {
+        if (!document.body.classList.contains('is-admin')) return;
         modalImport.classList.add('show');
         document.getElementById('input-bulk-data').focus();
     });

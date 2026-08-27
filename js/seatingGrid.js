@@ -107,6 +107,7 @@ class SeatingGrid {
                 lockBtn.title = student.isLocked ? 'Đang khóa vị trí (Click để mở khóa)' : 'Khóa vị trí (Giữ nguyên khi xáo trộn)';
                 lockBtn.innerHTML = `<i class="fa-solid ${student.isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>`;
                 lockBtn.onclick = (e) => {
+                    if (!document.body.classList.contains('is-admin')) return;
                     e.stopPropagation();
                     document.dispatchEvent(new CustomEvent('app:toggle-lock', { detail: { studentId: student.id } }));
                 };
@@ -118,6 +119,7 @@ class SeatingGrid {
                 rmBtn.title = 'Hủy xếp chỗ';
                 rmBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                 rmBtn.onclick = (e) => {
+                    if (!document.body.classList.contains('is-admin')) return;
                     e.stopPropagation();
                     // Custom event to handle unassigning
                     document.dispatchEvent(new CustomEvent('app:unassign', { detail: { studentId: student.id } }));
@@ -177,6 +179,7 @@ class SeatingGrid {
                 btnEdit.title = 'Chỉnh sửa tên & chức danh';
                 btnEdit.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
                 btnEdit.onclick = (e) => {
+                    if (!document.body.classList.contains('is-admin')) return;
                     e.stopPropagation();
                     document.dispatchEvent(new CustomEvent('app:edit-student', { detail: { studentId: student.id } }));
                 };
@@ -187,6 +190,7 @@ class SeatingGrid {
                 btnDelete.title = 'Xóa học sinh';
                 btnDelete.innerHTML = '<i class="fa-solid fa-trash"></i>';
                 btnDelete.onclick = (e) => {
+                    if (!document.body.classList.contains('is-admin')) return;
                     e.stopPropagation();
                     document.dispatchEvent(new CustomEvent('app:delete-student', { detail: { studentId: student.id } }));
                 };

@@ -1361,7 +1361,7 @@ body {
 
 /* Hide admin elements when not in admin mode */
 body:not(.is-admin) .admin-only {
-    display: none !important;
+    /* display: none !important; */ /* User wants UI to remain intact in lock mode */
 }
 
 /* Hide sensitive info based on settings */
@@ -1372,7 +1372,7 @@ body.hide-phones .phone-column {
     display: none !important; /* Hide column header/cells in table */
 }
 
-body.hide-tabs #nav-student-info {
+body.hide-tabs .nav-links li:has(#nav-student-info) {
     display: none !important;
 }
 

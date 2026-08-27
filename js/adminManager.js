@@ -110,12 +110,12 @@ class AdminManager {
         // Open unlock or dashboard modal
         this.btnUnlock.addEventListener('click', () => {
             if (this.isAdmin) {
-                if (this.modalDashboard) this.modalDashboard.style.display = 'block';
+                if (this.modalDashboard) this.modalDashboard.classList.add('show');
             } else {
                 if (this.modalUnlock) {
                     this.inputPassword.value = '';
                     this.errorMsg.style.display = 'none';
-                    this.modalUnlock.style.display = 'block';
+                    this.modalUnlock.classList.add('show');
                     setTimeout(() => this.inputPassword.focus(), 100);
                 }
             }
@@ -140,7 +140,7 @@ class AdminManager {
             if (error) {
                 this.errorMsg.style.display = 'block';
             } else {
-                this.modalUnlock.style.display = 'none';
+                this.modalUnlock.classList.remove('show');
             }
         };
 
@@ -158,7 +158,7 @@ class AdminManager {
         if (this.btnLogout) {
             this.btnLogout.addEventListener('click', async () => {
                 await window.supabaseClient.auth.signOut();
-                if (this.modalDashboard) this.modalDashboard.style.display = 'none';
+                if (this.modalDashboard) this.modalDashboard.classList.remove('show');
             });
         }
 
