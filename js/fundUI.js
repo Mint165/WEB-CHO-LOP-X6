@@ -1,12 +1,12 @@
-﻿/**
+/**
  * FundUI
- * ─Éiß╗üu khiß╗ân giao diß╗çn Quß║ún L├╜ Thß╗º Quß╗╣:
- * - Render Dashboard & Biß╗âu ─æß╗ô Chart.js
- * - Render Sß╗ò Vi Phß║ím & Bß╗Ö Lß╗ìc
- * - Render Hß╗ô S╞í Hß╗ìc Sinh
- * - Render Quß║ún L├╜ Nß╗ú & Thu Tiß╗ün
- * - Render Quy ─Éß╗ïnh Mß╗⌐c Phß║ít & Nhß║¡t K├╜
- * - Xß╗¡ l├╜ Modal & In Bi├¬n Lai
+ * Điều khiển giao diện Quản Lý Thủ Quỹ:
+ * - Render Dashboard & Biểu đồ Chart.js
+ * - Render Sổ Vi Phạm & Bộ Lọc
+ * - Render Hồ Sơ Học Sinh
+ * - Render Quản Lý Nợ & Thu Tiền
+ * - Render Quy Định Mức Phạt & Nhật Ký
+ * - Xử lý Modal & In Biên Lai
  */
 
 class FundUI {
@@ -105,14 +105,14 @@ class FundUI {
                     this.applyRolePermissions();
                     this.renderAll();
                 } else {
-                    // Admin hoß║╖c Teacher cß║ºn x├íc thß╗▒c mß║¡t khß║⌐u
+                    // Admin hoặc Teacher cần xác thực mật khẩu
                     if (this.fundManager.isAuthenticated) {
                         if (roleStudentSelect) roleStudentSelect.style.display = 'none';
                         this.fundManager.setRole(newRole, null);
                         this.applyRolePermissions();
                         this.renderAll();
                     } else {
-                        // Mß╗ƒ popup y├¬u cß║ºu ─æ─âng nhß║¡p mß║¡t khß║⌐u
+                        // Mở popup yêu cầu đăng nhập mật khẩu
                         this.pendingRole = newRole;
                         this.openAuthModal();
                     }
@@ -137,7 +137,7 @@ class FundUI {
                 if (roleStudentSelect) roleStudentSelect.style.display = 'inline-block';
                 this.applyRolePermissions();
                 this.renderAll();
-                alert('─É├ú ─æ─âng xuß║Ñt quyß╗ün quß║ún trß╗ï. ─Éang ß╗ƒ chß║┐ ─æß╗Ö xem cß╗ºa hß╗ìc sinh.');
+                alert('Đã đăng xuất quyền quản trị. Đang ở chế độ xem của học sinh.');
             });
         }
 
@@ -243,7 +243,7 @@ class FundUI {
         }
 
         if (vioStudentSelect) {
-            vioStudentSelect.innerHTML = '<option value="">-- Chß╗ìn hß╗ìc sinh vi phß║ím --</option>';
+            vioStudentSelect.innerHTML = '<option value="">-- Chọn học sinh vi phạm --</option>';
             students.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s.id;
@@ -258,11 +258,11 @@ class FundUI {
         const roleBadge = document.getElementById('current-role-badge');
         if (roleBadge) {
             if (role === 'admin') {
-                roleBadge.innerHTML = '<i class="fa-solid fa-user-shield"></i> Quß║ún trß╗ï vi├¬n (─É├ú mß╗ƒ kh├│a)';
+                roleBadge.innerHTML = '<i class="fa-solid fa-user-shield"></i> Quản trị viên (Đã mở khóa)';
                 roleBadge.className = 'role-badge badge-admin';
             } else {
                 const st = this.studentManager.getStudent(this.fundManager.currentStudentId);
-                roleBadge.innerHTML = `<i class="fa-solid fa-user-graduate"></i> Hß╗ìc sinh: ${st ? st.name : 'C├í nh├ón'}`;
+                roleBadge.innerHTML = `<i class="fa-solid fa-user-graduate"></i> Học sinh: ${st ? st.name : 'Cá nhân'}`;
                 roleBadge.className = 'role-badge badge-student';
             }
         }
@@ -296,7 +296,7 @@ class FundUI {
         if (totalPayableEl) totalPayableEl.textContent = this.fundManager.formatCurrency(stats.totalPayable);
         if (totalCollectedEl) totalCollectedEl.textContent = this.fundManager.formatCurrency(stats.totalCollected);
         if (totalRemainingEl) totalRemainingEl.textContent = this.fundManager.formatCurrency(stats.totalRemaining);
-        if (totalVioCountEl) totalVioCountEl.textContent = stats.totalViolationsCount + ' lß║ºn';
+        if (totalVioCountEl) totalVioCountEl.textContent = stats.totalViolationsCount + ' lần';
 
         // Update Progress Bar
         const progressFill = document.getElementById('fund-progress-fill');
@@ -307,8 +307,8 @@ class FundUI {
         if (progressPercent) progressPercent.textContent = `${stats.collectionRate}%`;
         if (progressDetails) {
             progressDetails.innerHTML = `
-                <span><i class="fa-solid fa-circle-check text-success"></i> ─É├ú thu: <b>${this.fundManager.formatCurrency(stats.totalCollected)}</b></span>
-                <span><i class="fa-solid fa-circle-exclamation text-danger"></i> C├▓n thiß║┐u: <b>${this.fundManager.formatCurrency(stats.totalRemaining)}</b></span>
+                <span><i class="fa-solid fa-circle-check text-success"></i> Đã thu: <b>${this.fundManager.formatCurrency(stats.totalCollected)}</b></span>
+                <span><i class="fa-solid fa-circle-exclamation text-danger"></i> Còn thiếu: <b>${this.fundManager.formatCurrency(stats.totalRemaining)}</b></span>
             `;
         }
 
@@ -317,7 +317,7 @@ class FundUI {
         if (topTypesContainer) {
             const typesData = this.fundManager.getViolationsByType();
             if (typesData.labels.length === 0) {
-                topTypesContainer.innerHTML = '<p class="empty-text">Ch╞░a c├│ vi phß║ím n├áo</p>';
+                topTypesContainer.innerHTML = '<p class="empty-text">Chưa có vi phạm nào</p>';
             } else {
                 let html = '<ul class="top-list">';
                 const maxCount = Math.max(...typesData.counts, 1);
@@ -329,7 +329,7 @@ class FundUI {
                         <li class="top-list-item">
                             <div class="top-item-header">
                                 <span class="top-item-name"><i class="fa-solid fa-triangle-exclamation"></i> ${label}</span>
-                                <span class="top-item-badge">${count} lß║ºn</span>
+                                <span class="top-item-badge">${count} lần</span>
                             </div>
                             <div class="mini-progress-bar"><div class="mini-progress-fill" style="width: ${pct}%;"></div></div>
                         </li>
@@ -345,18 +345,18 @@ class FundUI {
         if (recentContainer) {
             const violations = this.fundManager.getAllViolations().slice(0, 5);
             if (violations.length === 0) {
-                recentContainer.innerHTML = '<p class="empty-text">Ch╞░a c├│ vi phß║ím gß║ºn ─æ├óy</p>';
+                recentContainer.innerHTML = '<p class="empty-text">Chưa có vi phạm gần đây</p>';
             } else {
                 let html = '<div class="recent-list">';
                 violations.forEach(v => {
                     const statusClass = v.status === 'paid' ? 'status-paid' : (v.status === 'unpaid' ? 'status-unpaid' : 'status-waived');
-                    const statusLabel = v.status === 'paid' ? '─É├ú nß╗Öp' : (v.status === 'unpaid' ? 'Ch╞░a nß╗Öp' : (v.status === 'waived' ? '─É╞░ß╗úc miß╗àn' : '─É├ú hß╗ºy'));
+                    const statusLabel = v.status === 'paid' ? 'Đã nộp' : (v.status === 'unpaid' ? 'Chưa nộp' : (v.status === 'waived' ? 'Được miễn' : 'Đã hủy'));
                     html += `
                         <div class="recent-item">
                             <div class="recent-avatar"><i class="fa-solid fa-user"></i></div>
                             <div class="recent-info">
-                                <div class="recent-title"><b>${v.studentName}</b> ΓÇô <span class="vio-name">${v.violationType}</span></div>
-                                <div class="recent-meta">${this.fundManager.formatDateOnly(v.date)} ΓÇó ${v.recorder}</div>
+                                <div class="recent-title"><b>${v.studentName}</b> – <span class="vio-name">${v.violationType}</span></div>
+                                <div class="recent-meta">${this.fundManager.formatDateOnly(v.date)} • ${v.recorder}</div>
                             </div>
                             <div class="recent-amount">
                                 <div class="amount-val">${this.fundManager.formatCurrency(v.amount)}</div>
@@ -387,7 +387,7 @@ class FundUI {
                 data: {
                     labels: revData.labels,
                     datasets: [{
-                        label: 'Tiß╗ün phß║ít (VN─É)',
+                        label: 'Tiền phạt (VNĐ)',
                         data: revData.amounts,
                         backgroundColor: 'rgba(79, 70, 229, 0.75)',
                         borderColor: '#4F46E5',
@@ -402,7 +402,7 @@ class FundUI {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => `Tiß╗ün phß║ít: ${Number(ctx.raw).toLocaleString('vi-VN')}─æ`
+                                label: (ctx) => `Tiền phạt: ${Number(ctx.raw).toLocaleString('vi-VN')}đ`
                             }
                         }
                     },
@@ -434,7 +434,7 @@ class FundUI {
             this.charts.types = new Chart(ctxTypes, {
                 type: 'doughnut',
                 data: {
-                    labels: typesData.labels.length > 0 ? typesData.labels : ['Ch╞░a c├│ dß╗» liß╗çu'],
+                    labels: typesData.labels.length > 0 ? typesData.labels : ['Chưa có dữ liệu'],
                     datasets: [{
                         data: typesData.counts.length > 0 ? typesData.counts : [1],
                         backgroundColor: typesData.labels.length > 0 ? bgColors.slice(0, typesData.labels.length) : ['#E5E7EB'],
@@ -466,7 +466,7 @@ class FundUI {
                 data: {
                     labels: topList.map(t => t.studentName),
                     datasets: [{
-                        label: 'Sß╗æ lß║ºn vi phß║ím',
+                        label: 'Số lần vi phạm',
                         data: topList.map(t => t.count),
                         backgroundColor: 'rgba(239, 68, 68, 0.8)',
                         borderColor: '#EF4444',
@@ -510,7 +510,7 @@ class FundUI {
         const filterSelect = document.getElementById('vio-category-filter');
 
         if (select) {
-            select.innerHTML = '<option value="">-- Chß╗ìn loß║íi vi phß║ím quy ─æß╗ïnh --</option>';
+            select.innerHTML = '<option value="">-- Chọn loại vi phạm quy định --</option>';
             rules.forEach(r => {
                 const opt = document.createElement('option');
                 opt.value = r.name;
@@ -573,7 +573,7 @@ class FundUI {
         });
 
         if (countDisplay) {
-            countDisplay.textContent = `Hiß╗ân thß╗ï ${list.length} bß║ún ghi`;
+            countDisplay.textContent = `Hiển thị ${list.length} bản ghi`;
         }
 
         if (list.length === 0) {
@@ -582,7 +582,7 @@ class FundUI {
                     <td colspan="7" class="text-center py-5">
                         <div class="empty-table-state">
                             <i class="fa-solid fa-clipboard-check text-muted" style="font-size: 2.5rem; margin-bottom: 8px;"></i>
-                            <p class="text-muted">Kh├┤ng t├¼m thß║Ñy bß║ún ghi vi phß║ím n├áo ph├╣ hß╗úp</p>
+                            <p class="text-muted">Không tìm thấy bản ghi vi phạm nào phù hợp</p>
                         </div>
                     </td>
                 </tr>
@@ -593,10 +593,10 @@ class FundUI {
         let html = '';
         list.forEach(v => {
             const statusConfig = {
-                paid: { label: '─É├ú nß╗Öp', class: 'status-paid', icon: 'fa-check' },
-                unpaid: { label: 'Ch╞░a nß╗Öp', class: 'status-unpaid', icon: 'fa-circle-xmark' },
-                waived: { label: '─É╞░ß╗úc miß╗àn', class: 'status-waived', icon: 'fa-shield-halved' },
-                cancelled: { label: '─É├ú hß╗ºy', class: 'status-cancelled', icon: 'fa-ban' }
+                paid: { label: 'Đã nộp', class: 'status-paid', icon: 'fa-check' },
+                unpaid: { label: 'Chưa nộp', class: 'status-unpaid', icon: 'fa-circle-xmark' },
+                waived: { label: 'Được miễn', class: 'status-waived', icon: 'fa-shield-halved' },
+                cancelled: { label: 'Đã hủy', class: 'status-cancelled', icon: 'fa-ban' }
             }[v.status] || { label: v.status, class: 'status-unpaid', icon: 'fa-circle' };
 
             const canEdit = this.fundManager.canEdit();
@@ -607,20 +607,20 @@ class FundUI {
                 actionButtons = `
                     <div class="table-actions">
                         ${v.status === 'unpaid' ? `
-                            <button class="btn-action btn-action-pay btn-mark-paid" data-id="${v.id}" title="Thu tiß╗ün / ─É├ính dß║Ñu ─æ├ú nß╗Öp">
-                                <i class="fa-solid fa-money-bill-wave"></i> Thu tiß╗ün
+                            <button class="btn-action btn-action-pay btn-mark-paid" data-id="${v.id}" title="Thu tiền / Đánh dấu đã nộp">
+                                <i class="fa-solid fa-money-bill-wave"></i> Thu tiền
                             </button>
                         ` : ''}
                         ${v.status === 'paid' ? `
-                            <button class="btn-action btn-action-receipt btn-view-receipt" data-id="${v.id}" title="Xem & in phiß║┐u bi├¬n nhß║¡n">
-                                <i class="fa-solid fa-receipt"></i> Phiß║┐u thu
+                            <button class="btn-action btn-action-receipt btn-view-receipt" data-id="${v.id}" title="Xem & in phiếu biên nhận">
+                                <i class="fa-solid fa-receipt"></i> Phiếu thu
                             </button>
                         ` : ''}
                         ${canEdit ? `
-                            <button class="btn-action btn-action-edit btn-edit-violation" data-id="${v.id}" title="Chß╗ënh sß╗¡a">
+                            <button class="btn-action btn-action-edit btn-edit-violation" data-id="${v.id}" title="Chỉnh sửa">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button class="btn-action btn-action-danger btn-delete-violation" data-id="${v.id}" title="X├│a">
+                            <button class="btn-action btn-action-danger btn-delete-violation" data-id="${v.id}" title="Xóa">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         ` : ''}
@@ -628,10 +628,10 @@ class FundUI {
                 `;
             } else {
                 actionButtons = v.status === 'paid' ? `
-                    <button class="btn-action btn-action-receipt btn-view-receipt" data-id="${v.id}" title="Xem phiß║┐u bi├¬n nhß║¡n">
-                        <i class="fa-solid fa-receipt"></i> Phiß║┐u thu
+                    <button class="btn-action btn-action-receipt btn-view-receipt" data-id="${v.id}" title="Xem phiếu biên nhận">
+                        <i class="fa-solid fa-receipt"></i> Phiếu thu
                     </button>
-                ` : '<span class="text-muted">ΓÇô</span>';
+                ` : '<span class="text-muted">–</span>';
             }
 
             html += `
@@ -652,7 +652,7 @@ class FundUI {
                         <span class="badge-vio-type">${v.violationType}</span>
                     </td>
                     <td>
-                        <span class="vio-note-text" title="${v.note || 'Kh├┤ng c├│ ghi ch├║'}">${v.note || 'ΓÇô'}</span>
+                        <span class="vio-note-text" title="${v.note || 'Không có ghi chú'}">${v.note || '–'}</span>
                     </td>
                     <td>
                         <b class="text-amount">${this.fundManager.formatCurrency(v.amount)}</b>
@@ -711,7 +711,7 @@ class FundUI {
         document.querySelectorAll('.btn-delete-violation').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                if (confirm('Bß║ín c├│ chß║»c chß║»n muß╗æn x├│a bß║ún ghi vi phß║ím n├áy?')) {
+                if (confirm('Bạn có chắc chắn muốn xóa bản ghi vi phạm này?')) {
                     this.fundManager.deleteViolation(id);
                     this.renderAll();
                 }
@@ -749,7 +749,7 @@ class FundUI {
         }
 
         if (students.length === 0) {
-            grid.innerHTML = '<div class="col-span-full py-5 text-center text-muted">Kh├┤ng t├¼m thß║Ñy hß╗ìc sinh n├áo</div>';
+            grid.innerHTML = '<div class="col-span-full py-5 text-center text-muted">Không tìm thấy học sinh nào</div>';
             return;
         }
 
@@ -766,33 +766,33 @@ class FundUI {
                         </div>
                         <div class="student-main-info">
                             <h3 class="student-card-name">${s.name}</h3>
-                            <span class="student-card-role">${s.role || 'Hß╗ìc sinh'}</span>
+                            <span class="student-card-role">${s.role || 'Học sinh'}</span>
                         </div>
-                        ${hasDebt ? `<span class="debt-badge">Nß╗ú ${this.fundManager.formatCurrency(summary.remainingAmount)}</span>` : '<span class="clear-badge">─É├ú nß╗Öp ─æß╗º</span>'}
+                        ${hasDebt ? `<span class="debt-badge">Nợ ${this.fundManager.formatCurrency(summary.remainingAmount)}</span>` : '<span class="clear-badge">Đã nộp đủ</span>'}
                     </div>
                     
                     <div class="student-card-stats">
                         <div class="student-stat-item">
-                            <span class="stat-label">Tß╗òng vi phß║ím</span>
-                            <span class="stat-value"><b>${summary.totalViolations}</b> lß║ºn</span>
+                            <span class="stat-label">Tổng vi phạm</span>
+                            <span class="stat-value"><b>${summary.totalViolations}</b> lần</span>
                         </div>
                         <div class="student-stat-item">
-                            <span class="stat-label">Tß╗òng tiß╗ün phß║ít</span>
+                            <span class="stat-label">Tổng tiền phạt</span>
                             <span class="stat-value text-primary"><b>${this.fundManager.formatCurrency(summary.totalAmount)}</b></span>
                         </div>
                         <div class="student-stat-item">
-                            <span class="stat-label">─É├ú nß╗Öp</span>
+                            <span class="stat-label">Đã nộp</span>
                             <span class="stat-value text-success"><b>${this.fundManager.formatCurrency(summary.paidAmount)}</b></span>
                         </div>
                         <div class="student-stat-item">
-                            <span class="stat-label">C├▓n thiß║┐u</span>
+                            <span class="stat-label">Còn thiếu</span>
                             <span class="stat-value ${hasDebt ? 'text-danger font-bold' : 'text-muted'}"><b>${this.fundManager.formatCurrency(summary.remainingAmount)}</b></span>
                         </div>
                     </div>
 
                     <div class="student-card-footer">
                         <button class="btn btn-sm btn-outline btn-view-profile w-100" data-student-id="${s.id}">
-                            <i class="fa-solid fa-folder-open"></i> Xem chi tiß║┐t hß╗ô s╞í
+                            <i class="fa-solid fa-folder-open"></i> Xem chi tiết hồ sơ
                         </button>
                     </div>
                 </div>
@@ -823,10 +823,10 @@ class FundUI {
 
         // Fill Student Header Info
         document.getElementById('ledger-student-name').textContent = student.name;
-        document.getElementById('ledger-student-role').textContent = student.role || 'Hß╗ìc sinh lß╗¢p';
+        document.getElementById('ledger-student-role').textContent = student.role || 'Học sinh lớp';
         
         // Fill KPI stats
-        document.getElementById('ledger-stat-violations').textContent = `${summary.totalViolations} lß║ºn`;
+        document.getElementById('ledger-stat-violations').textContent = `${summary.totalViolations} lần`;
         document.getElementById('ledger-stat-total').textContent = this.fundManager.formatCurrency(summary.totalAmount);
         document.getElementById('ledger-stat-paid').textContent = this.fundManager.formatCurrency(summary.paidAmount);
         document.getElementById('ledger-stat-remaining').textContent = this.fundManager.formatCurrency(summary.remainingAmount);
@@ -858,17 +858,17 @@ class FundUI {
         const historyTbody = document.getElementById('ledger-history-tbody');
         if (historyTbody) {
             if (summary.violations.length === 0) {
-                historyTbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Hß╗ìc sinh ch╞░a c├│ ghi nhß║¡n vi phß║ím n├áo!</td></tr>';
+                historyTbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Học sinh chưa có ghi nhận vi phạm nào!</td></tr>';
             } else {
                 let html = '';
                 summary.violations.forEach(v => {
                     const statusClass = v.status === 'paid' ? 'status-paid' : (v.status === 'unpaid' ? 'status-unpaid' : 'status-waived');
-                    const statusLabel = v.status === 'paid' ? 'Γ£à ─É├ú nß╗Öp' : (v.status === 'unpaid' ? '≡ƒö┤ Ch╞░a nß╗Öp' : '≡ƒ¢í∩╕Å Miß╗àn/Hß╗ºy');
+                    const statusLabel = v.status === 'paid' ? '✅ Đã nộp' : (v.status === 'unpaid' ? '🔴 Chưa nộp' : '🛡️ Miễn/Hủy');
                     html += `
                         <tr>
                             <td><b>${this.fundManager.formatDateOnly(v.date)}</b></td>
                             <td><span class="badge-vio-type">${v.violationType}</span></td>
-                            <td>${v.note || 'ΓÇô'}</td>
+                            <td>${v.note || '–'}</td>
                             <td><b>${this.fundManager.formatCurrency(v.amount)}</b></td>
                             <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                         </tr>
@@ -895,14 +895,14 @@ class FundUI {
         const totalDebt = debtors.reduce((sum, d) => sum + d.remainingAmount, 0);
 
         if (debtSummaryTotal) debtSummaryTotal.textContent = this.fundManager.formatCurrency(totalDebt);
-        if (debtSummaryCount) debtSummaryCount.textContent = `${debtors.length} hß╗ìc sinh`;
+        if (debtSummaryCount) debtSummaryCount.textContent = `${debtors.length} học sinh`;
 
         if (debtors.length === 0) {
             debtListContainer.innerHTML = `
                 <div class="empty-debt-state">
                     <i class="fa-solid fa-circle-check text-success" style="font-size: 3rem; margin-bottom: 12px;"></i>
-                    <h3>Tuyß╗çt vß╗¥i! Kh├┤ng c├│ hß╗ìc sinh n├áo nß╗ú tiß╗ün quß╗╣</h3>
-                    <p class="text-muted">Tß║Ñt cß║ú c├íc khoß║ún phß║ít vi phß║ím ─æ├ú ─æ╞░ß╗úc ho├án th├ánh ─æß║ºy ─æß╗º.</p>
+                    <h3>Tuyệt vời! Không có học sinh nào nợ tiền quỹ</h3>
+                    <p class="text-muted">Tất cả các khoản phạt vi phạm đã được hoàn thành đầy đủ.</p>
                 </div>
             `;
         } else {
@@ -914,20 +914,20 @@ class FundUI {
                         <div class="debt-student-info">
                             <h4 class="debt-student-name">${d.name} <span class="debt-student-role">${d.role || ''}</span></h4>
                             <div class="debt-student-meta">
-                                <span><i class="fa-solid fa-triangle-exclamation text-danger"></i> ${d.unpaidCount} khoß║ún ch╞░a nß╗Öp</span>
-                                <span><i class="fa-solid fa-clock-rotate-left"></i> Tß╗òng phß║ít: ${this.fundManager.formatCurrency(d.totalAmount)}</span>
+                                <span><i class="fa-solid fa-triangle-exclamation text-danger"></i> ${d.unpaidCount} khoản chưa nộp</span>
+                                <span><i class="fa-solid fa-clock-rotate-left"></i> Tổng phạt: ${this.fundManager.formatCurrency(d.totalAmount)}</span>
                             </div>
                         </div>
                         <div class="debt-amount-box">
-                            <span class="debt-label">Sß╗æ tiß╗ün c├▓n thiß║┐u</span>
+                            <span class="debt-label">Số tiền còn thiếu</span>
                             <b class="debt-value">${this.fundManager.formatCurrency(d.remainingAmount)}</b>
                         </div>
                         <div class="debt-action">
                             ${this.fundManager.canCollectMoney() ? `
                                 <button class="btn btn-primary btn-sm btn-collect-debt" data-student-id="${d.student.id}" data-amount="${d.remainingAmount}">
-                                    <i class="fa-solid fa-check-circle"></i> ─É├ính dß║Ñu ─æ├ú nß╗Öp
+                                    <i class="fa-solid fa-check-circle"></i> Đánh dấu đã nộp
                                 </button>
-                            ` : '<span class="badge badge-unpaid">Ch╞░a ho├án th├ánh</span>'}
+                            ` : '<span class="badge badge-unpaid">Chưa hoàn thành</span>'}
                         </div>
                     </div>
                 `;
@@ -953,7 +953,7 @@ class FundUI {
 
         const payments = this.fundManager.getAllPayments();
         if (payments.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Ch╞░a c├│ giao dß╗ïch thu tiß╗ün n├áo</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Chưa có giao dịch thu tiền nào</td></tr>';
             return;
         }
 
@@ -965,11 +965,11 @@ class FundUI {
                     <td>${this.fundManager.formatDateTime(p.date)}</td>
                     <td><b>${p.studentName}</b></td>
                     <td><b class="text-success">+${this.fundManager.formatCurrency(p.amount)}</b></td>
-                    <td><span class="badge badge-method">${p.method || 'Tiß╗ün mß║╖t'}</span></td>
+                    <td><span class="badge badge-method">${p.method || 'Tiền mặt'}</span></td>
                     <td>${p.collector}</td>
                     <td>
-                        <button class="btn-action btn-action-receipt btn-view-receipt-obj" data-id="${p.id}" title="Xem & In phiß║┐u thu">
-                            <i class="fa-solid fa-receipt"></i> Phiß║┐u thu
+                        <button class="btn-action btn-action-receipt btn-view-receipt-obj" data-id="${p.id}" title="Xem & In phiếu thu">
+                            <i class="fa-solid fa-receipt"></i> Phiếu thu
                         </button>
                     </td>
                 </tr>
@@ -1006,19 +1006,19 @@ class FundUI {
                             <b>${r.name}</b>
                         </div>
                     </td>
-                    <td><span class="badge badge-category">${r.category || 'Nß╗ü nß║┐p'}</span></td>
+                    <td><span class="badge badge-category">${r.category || 'Nề nếp'}</span></td>
                     <td><b class="text-amount">${this.fundManager.formatCurrency(r.amount)}</b></td>
                     <td>
                         ${this.fundManager.canEditRules() ? `
                             <div class="table-actions">
-                                <button class="btn-action btn-action-edit btn-edit-rule" data-id="${r.id}" title="Chß╗ënh sß╗¡a mß╗⌐c phß║ít">
-                                    <i class="fa-solid fa-pen"></i> Sß╗¡a
+                                <button class="btn-action btn-action-edit btn-edit-rule" data-id="${r.id}" title="Chỉnh sửa mức phạt">
+                                    <i class="fa-solid fa-pen"></i> Sửa
                                 </button>
-                                <button class="btn-action btn-action-danger btn-delete-rule" data-id="${r.id}" title="X├│a">
+                                <button class="btn-action btn-action-danger btn-delete-rule" data-id="${r.id}" title="Xóa">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
-                        ` : '<span class="text-muted">ΓÇô</span>'}
+                        ` : '<span class="text-muted">–</span>'}
                     </td>
                 </tr>
             `;
@@ -1035,7 +1035,7 @@ class FundUI {
         tbody.querySelectorAll('.btn-delete-rule').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                if (confirm('Bß║ín c├│ chß║»c muß╗æn x├│a loß║íi mß╗⌐c phß║ít n├áy?')) {
+                if (confirm('Bạn có chắc muốn xóa loại mức phạt này?')) {
                     this.fundManager.deleteRule(id);
                     this.renderRules();
                     this.populateViolationTypeDropdowns();
@@ -1053,7 +1053,7 @@ class FundUI {
 
         const logs = this.fundManager.getAllAuditLogs();
         if (logs.length === 0) {
-            stream.innerHTML = '<p class="text-center text-muted py-4"><i class="fa-solid fa-inbox"></i> Ch╞░a c├│ nhß║¡t k├╜ hoß║ít ─æß╗Öng n├áo</p>';
+            stream.innerHTML = '<p class="text-center text-muted py-4"><i class="fa-solid fa-inbox"></i> Chưa có nhật ký hoạt động nào</p>';
             return;
         }
 
@@ -1070,7 +1070,7 @@ class FundUI {
                             <span class="timeline-time">${this.fundManager.formatDateTime(log.timestamp)}</span>
                             ${canEdit ? `
                                 <div class="timeline-actions">
-                                    <button class="btn-delete-log" data-id="${log.id}" title="X├│a d├▓ng nhß║¡t k├╜ n├áy">
+                                    <button class="btn-delete-log" data-id="${log.id}" title="Xóa dòng nhật ký này">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
                                 </div>
@@ -1088,7 +1088,7 @@ class FundUI {
             stream.querySelectorAll('.btn-delete-log').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = e.currentTarget.getAttribute('data-id');
-                    if (confirm('X├│a bß║ún ghi nhß║¡t k├╜ hoß║ít ─æß╗Öng n├áy?')) {
+                    if (confirm('Xóa bản ghi nhật ký hoạt động này?')) {
                         this.fundManager.deleteAuditLog(id);
                         this.renderAuditLogs();
                     }
@@ -1128,7 +1128,7 @@ class FundUI {
             });
         }
 
-        // Save Payment Form (Thu tiß╗ün nß╗ú)
+        // Save Payment Form (Thu tiền nợ)
         const btnConfirmPay = document.getElementById('btn-confirm-payment');
         if (btnConfirmPay) {
             btnConfirmPay.addEventListener('click', () => {
@@ -1181,14 +1181,14 @@ class FundUI {
         if (btnClearFund) {
             btnClearFund.addEventListener('click', () => {
                 if (!this.fundManager.canEdit()) {
-                    alert('Bß║ín cß║ºn ─æ─âng nhß║¡p quyß╗ün Admin ─æß╗â thß╗▒c hiß╗çn thao t├íc n├áy!');
+                    alert('Bạn cần đăng nhập quyền Admin để thực hiện thao tác này!');
                     return;
                 }
-                const confirmClear = confirm('Cß║óNH B├üO: Bß║ín c├│ chß║»c chß║»n muß╗æn X├ôA TO├ÇN Bß╗ÿ vi phß║ím & giao dß╗ïch quß╗╣ vß╗ü 0─æ ─æß╗â bß║»t ─æß║ºu n─âm hß╗ìc mß╗¢i 2026-2027?\n\n(Danh s├ích hß╗ìc sinh v├á Bß║úng quy ─æß╗ïnh mß╗⌐c phß║ít vß║½n ─æ╞░ß╗úc giß╗» nguy├¬n).');
+                const confirmClear = confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA TOÀN BỘ vi phạm & giao dịch quỹ về 0đ để bắt đầu năm học mới 2026-2027?\n\n(Danh sách học sinh và Bảng quy định mức phạt vẫn được giữ nguyên).');
                 if (confirmClear) {
                     this.fundManager.clearAllFundData();
                     this.renderAll();
-                    alert('─É├ú dß╗ìn sß║ích dß╗» liß╗çu quß╗╣ vß╗ü 0─æ th├ánh c├┤ng!');
+                    alert('Đã dọn sạch dữ liệu quỹ về 0đ thành công!');
                 }
             });
         }
@@ -1197,13 +1197,13 @@ class FundUI {
         if (btnRestoreFund) {
             btnRestoreFund.addEventListener('click', () => {
                 if (!this.fundManager.canEdit()) {
-                    alert('Bß║ín cß║ºn ─æ─âng nhß║¡p quyß╗ün Quß║ún trß╗ï vi├¬n ─æß╗â thß╗▒c hiß╗çn thao t├íc n├áy!');
+                    alert('Bạn cần đăng nhập quyền Quản trị viên để thực hiện thao tác này!');
                     return;
                 }
-                if (confirm('Kh├┤i phß╗Ñc lß║íi dß╗» liß╗çu vi phß║ím mß║½u thß╗¡ nghiß╗çm ban ─æß║ºu?')) {
+                if (confirm('Khôi phục lại dữ liệu vi phạm mẫu thử nghiệm ban đầu?')) {
                     this.fundManager.restoreSampleData();
                     this.renderAll();
-                    alert('─É├ú nß║íp lß║íi dß╗» liß╗çu vi phß║ím mß║½u th├ánh c├┤ng!');
+                    alert('Đã nạp lại dữ liệu vi phạm mẫu thành công!');
                 }
             });
         }
@@ -1213,13 +1213,13 @@ class FundUI {
         if (btnClearAudit) {
             btnClearAudit.addEventListener('click', () => {
                 if (!this.fundManager.canEdit()) {
-                    alert('Bß║ín cß║ºn ─æ─âng nhß║¡p quyß╗ün Quß║ún trß╗ï vi├¬n ─æß╗â thß╗▒c hiß╗çn thao t├íc n├áy!');
+                    alert('Bạn cần đăng nhập quyền Quản trị viên để thực hiện thao tác này!');
                     return;
                 }
-                if (confirm('Bß║ín c├│ chß║»c chß║»n muß╗æn X├ôA TO├ÇN Bß╗ÿ nhß║¡t k├╜ hoß║ít ─æß╗Öng kh├┤ng?')) {
+                if (confirm('Bạn có chắc chắn muốn XÓA TOÀN BỘ nhật ký hoạt động không?')) {
                     this.fundManager.clearAuditLogs();
                     this.renderAuditLogs();
-                    alert('─É├ú x├│a sß║ích to├án bß╗Ö nhß║¡t k├╜ hoß║ít ─æß╗Öng!');
+                    alert('Đã xóa sạch toàn bộ nhật ký hoạt động!');
                 }
             });
         }
@@ -1284,16 +1284,16 @@ class FundUI {
         const statusSelect = document.getElementById('input-vio-status');
 
         if (!studentSelect.value) {
-            alert('Vui l├▓ng chß╗ìn hß╗ìc sinh vi phß║ím!');
+            alert('Vui lòng chọn học sinh vi phạm!');
             return;
         }
         if (!typeSelect.value) {
-            alert('Vui l├▓ng chß╗ìn loß║íi vi phß║ím!');
+            alert('Vui lòng chọn loại vi phạm!');
             return;
         }
 
         const student = this.studentManager.getStudent(studentSelect.value);
-        const studentName = student ? student.name : 'Hß╗ìc sinh';
+        const studentName = student ? student.name : 'Học sinh';
 
         this.fundManager.addViolation({
             studentId: studentSelect.value,
@@ -1347,7 +1347,7 @@ class FundUI {
         if (!modal) return;
 
         document.getElementById('pay-student-id').value = studentId;
-        document.getElementById('pay-student-name').textContent = student ? student.name : 'Hß╗ìc sinh';
+        document.getElementById('pay-student-name').textContent = student ? student.name : 'Học sinh';
         
         const amountInput = document.getElementById('pay-amount-input');
         if (amountInput) amountInput.value = defaultAmount || 0;
@@ -1374,7 +1374,7 @@ class FundUI {
         const note = document.getElementById('pay-note-input').value;
 
         if (amount <= 0) {
-            alert('Vui l├▓ng nhß║¡p sß╗æ tiß╗ün hß╗úp lß╗ç lß╗¢n h╞ín 0!');
+            alert('Vui lòng nhập số tiền hợp lệ lớn hơn 0!');
             return;
         }
 
@@ -1392,7 +1392,7 @@ class FundUI {
             // Show receipt immediately
             this.openReceiptModal(res.receipt);
         } else {
-            alert(res.message || 'Lß╗ùi khi thu tiß╗ün!');
+            alert(res.message || 'Lỗi khi thu tiền!');
         }
     }
 
@@ -1403,10 +1403,10 @@ class FundUI {
         document.getElementById('receipt-number').textContent = receipt.receiptNumber;
         document.getElementById('receipt-date').textContent = this.fundManager.formatDateTime(receipt.date);
         document.getElementById('receipt-student-name').textContent = receipt.studentName;
-        document.getElementById('receipt-method').textContent = receipt.method || 'Tiß╗ün mß║╖t';
+        document.getElementById('receipt-method').textContent = receipt.method || 'Tiền mặt';
         document.getElementById('receipt-total-amount').textContent = this.fundManager.formatCurrency(receipt.amount);
         document.getElementById('receipt-collector-name').textContent = receipt.collector;
-        document.getElementById('receipt-note').textContent = receipt.note || 'Nß╗Öp tiß╗ün quß╗╣ phß║ít vi phß║ím nß╗ü nß║┐p';
+        document.getElementById('receipt-note').textContent = receipt.note || 'Nộp tiền quỹ phạt vi phạm nề nếp';
 
         const itemsTbody = document.getElementById('receipt-items-tbody');
         if (itemsTbody) {
@@ -1425,7 +1425,7 @@ class FundUI {
                 html = `
                     <tr>
                         <td>1</td>
-                        <td>${receipt.note || 'Thu tiß╗ün phß║ít nß╗ü nß║┐p'}</td>
+                        <td>${receipt.note || 'Thu tiền phạt nề nếp'}</td>
                         <td class="text-end"><b>${this.fundManager.formatCurrency(receipt.amount)}</b></td>
                     </tr>
                 `;
@@ -1441,10 +1441,10 @@ class FundUI {
             receiptNumber: 'BL-VIO-' + violation.id.replace('vio_', ''),
             date: violation.paidDate || violation.date,
             studentName: violation.studentName,
-            method: violation.paymentMethod || 'Tiß╗ün mß║╖t',
+            method: violation.paymentMethod || 'Tiền mặt',
             amount: violation.paidAmount || violation.amount,
-            collector: violation.collector || 'Lß╗¢p tr╞░ß╗ƒng',
-            note: `Thanh to├ín lß╗ùi: ${violation.violationType} (${violation.note || '─É├ú ho├án th├ánh'})`,
+            collector: violation.collector || 'Lớp trưởng',
+            note: `Thanh toán lỗi: ${violation.violationType} (${violation.note || 'Đã hoàn thành'})`,
             items: [
                 { type: violation.violationType, amount: violation.amount }
             ]
@@ -1462,11 +1462,11 @@ class FundUI {
         const amountInput = document.getElementById('input-rule-amount');
         const catInput = document.getElementById('input-rule-category');
 
-        if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-gavel text-primary"></i> Th├¬m Quy ─Éß╗ïnh Mß╗⌐c Phß║ít';
+        if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-gavel text-primary"></i> Thêm Quy Định Mức Phạt';
         if (idInput) idInput.value = '';
         if (nameInput) nameInput.value = '';
         if (amountInput) amountInput.value = '10000';
-        if (catInput) catInput.value = 'Nß╗ü nß║┐p';
+        if (catInput) catInput.value = 'Nề nếp';
 
         modal.classList.add('show');
     }
@@ -1484,11 +1484,11 @@ class FundUI {
         const amountInput = document.getElementById('input-rule-amount');
         const catInput = document.getElementById('input-rule-category');
 
-        if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-pen-to-square text-primary"></i> Chß╗ënh Sß╗¡a Quy ─Éß╗ïnh Mß╗⌐c Phß║ít';
+        if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-pen-to-square text-primary"></i> Chỉnh Sửa Quy Định Mức Phạt';
         if (idInput) idInput.value = rule.id;
         if (nameInput) nameInput.value = rule.name;
         if (amountInput) amountInput.value = rule.amount;
-        if (catInput) catInput.value = rule.category || 'Nß╗ü nß║┐p';
+        if (catInput) catInput.value = rule.category || 'Nề nếp';
 
         modal.classList.add('show');
     }
@@ -1501,7 +1501,7 @@ class FundUI {
         const category = document.getElementById('input-rule-category').value.trim();
 
         if (!name) {
-            alert('Vui l├▓ng nhß║¡p t├¬n loß║íi lß╗ùi vi phß║ím!');
+            alert('Vui lòng nhập tên loại lỗi vi phạm!');
             return;
         }
 
