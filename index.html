@@ -539,56 +539,6 @@
          MODALS (CÁC CỬA SỔ POPUP)
          ========================================================================== -->
 
-    <!-- Modal 1: Thêm Học Sinh (Sơ đồ) -->
-    <div id="modal-add-student" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Thêm Học Sinh</h2>
-            <div class="form-group">
-                <label>Họ và Tên</label>
-                <input type="text" id="input-student-name" placeholder="VD: Nguyễn Văn A">
-            </div>
-            <div class="form-group">
-                <label>Chức vụ (Tuỳ chọn)</label>
-                <input type="text" id="input-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
-            </div>
-            <button id="btn-save-student" class="btn btn-primary w-100">Lưu</button>
-        </div>
-    </div>
-
-    <!-- Modal 2: Chỉnh Sửa Học Sinh (Sơ đồ) -->
-    <div id="modal-edit-student" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Chỉnh Sửa Học Sinh</h2>
-            <input type="hidden" id="edit-student-id">
-            <div class="form-group">
-                <label>Họ và Tên</label>
-                <input type="text" id="edit-student-name" placeholder="VD: Nguyễn Văn A">
-            </div>
-            <div class="form-group">
-                <label>Chức vụ (Tuỳ chọn)</label>
-                <input type="text" id="edit-student-role" placeholder="VD: LỚP TRƯỞNG, LPVTM...">
-            </div>
-            <button id="btn-update-student" class="btn btn-primary w-100"><i class="fa-solid fa-check"></i> Cập nhật</button>
-        </div>
-    </div>
-
-    <!-- Modal 3: Nhập Danh Sách Nhanh Bulk -->
-    <div id="modal-import" class="modal">
-        <div class="modal-content modal-lg">
-            <span class="close-modal">&times;</span>
-            <h2>Nhập Danh Sách Nhanh</h2>
-            <p class="modal-help">Dán danh sách học sinh từ Excel hoặc Word (mỗi học sinh 1 dòng).<br>Để thêm chức vụ, dùng dấu phẩy (VD: <i>Nguyễn Văn A, Lớp Trưởng</i>).</p>
-            <textarea id="input-bulk-data" rows="10" placeholder="Nguyễn Văn A&#10;Trần Thị B, LPHT&#10;Lê Văn C"></textarea>
-            <button id="btn-save-bulk" class="btn btn-primary w-100">Nhập danh sách</button>
-        </div>
-    </div>
-
-    <!-- Modal 4: Ghi Nhận Vi Phạm Mới (Fund) -->
-        </div>
-    </div>
-
     <!-- MODALS -->
     <!-- Add Student Modal -->
     <div id="modal-add-student" class="modal">
@@ -1100,6 +1050,8 @@
     <script src="js/seatingGrid.js"></script>
     <script src="js/dragdrop.js"></script>
     <script src="js/exporter.js"></script>
+    <!-- Thêm Chart.js cho tính năng Quỹ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/fundManager.js"></script>
     <script src="js/fundUI.js"></script>
     <script src="js/adminManager.js"></script>
