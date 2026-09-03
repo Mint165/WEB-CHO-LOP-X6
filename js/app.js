@@ -44,6 +44,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fundUI = new FundUI(fundManager, studentManager);
     fundUI.init();
 
+    window.studentManager = studentManager;
+    window.seatingGrid = seatingGrid;
+    window.dragDropManager = dragDropManager;
+    window.adminManager = adminManager;
+    window.fundManager = fundManager;
+    window.fundUI = fundUI;
+
     // 1.5 Routing Logic
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -195,14 +202,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Helper to prompt unlock if not admin
+    // Helper to check admin permission
     const ensureAdmin = () => {
-        if (!document.body.classList.contains('is-admin')) {
-            const btnUnlock = document.getElementById('btn-admin-unlock');
-            if (btnUnlock) btnUnlock.click();
-            return false;
-        }
-        return true;
+        return document.body.classList.contains('is-admin');
     };
 
     // 4. Toolbar Event Listeners

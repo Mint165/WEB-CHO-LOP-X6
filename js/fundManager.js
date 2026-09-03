@@ -851,19 +851,19 @@ class FundManager {
     }
 
     canEdit() {
-        return this.isAuthenticated && this.currentRole === 'admin';
+        return document.body.classList.contains('is-admin') || (this.isAuthenticated && this.currentRole === 'admin');
     }
 
     canRecordViolation() {
-        return this.isAuthenticated && this.currentRole === 'admin';
+        return this.canEdit();
     }
 
     canCollectMoney() {
-        return this.isAuthenticated && this.currentRole === 'admin';
+        return this.canEdit();
     }
 
     canEditRules() {
-        return this.isAuthenticated && this.currentRole === 'admin';
+        return this.canEdit();
     }
 
     // ==========================================

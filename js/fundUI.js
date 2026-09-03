@@ -133,6 +133,10 @@ class FundUI {
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
                 this.fundManager.logout();
+                document.body.classList.remove('is-admin');
+                if (window.adminManager) {
+                    window.adminManager.updateAdminState(false);
+                }
                 if (roleSelect) roleSelect.value = 'student';
                 if (roleStudentSelect) roleStudentSelect.style.display = 'inline-block';
                 this.applyRolePermissions();
@@ -180,6 +184,14 @@ class FundUI {
             if (roleStudentSelect) roleStudentSelect.style.display = 'none';
             if (roleSelect) roleSelect.value = targetRole;
             this.fundManager.setRole(targetRole, null);
+            document.body.classList.add('is-admin');
+            if (window.adminManager) {
+                window.adminManager.isAdmin = true;
+                if (window.adminManager.btnUnlock) {
+                    window.adminManager.btnUnlock.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+                    window.adminManager.btnUnlock.title = "Bảng Điều Khiển Admin (Đang mở khóa)";
+                }
+            }
             this.applyRolePermissions();
             this.renderAll();
         } else {
@@ -257,7 +269,7 @@ class FundUI {
         const role = this.fundManager.getRole();
         const roleBadge = document.getElementById('current-role-badge');
         if (roleBadge) {
-            if (role === 'admin') {
+            if (role === 'admin' || document.body.classList.contains('is-admin')) {
                 roleBadge.innerHTML = '<i class="fa-solid fa-user-shield"></i> Quản trị viên (Đã mở khóa)';
                 roleBadge.className = 'role-badge badge-admin';
             } else {
@@ -267,16 +279,11 @@ class FundUI {
             }
         }
 
-        // Hide/disable admin action buttons if not admin
-        const adminElements = document.querySelectorAll('.admin-only');
-        adminElements.forEach(el => {
-            el.style.display = this.fundManager.canEdit() ? '' : 'none';
-        });
-
-        const recordViolationElements = document.querySelectorAll('.can-record-vio');
-        recordViolationElements.forEach(el => {
-            el.style.display = this.fundManager.canRecordViolation() ? '' : 'none';
-        });
+        // Only toggle logout button visibility; all action buttons remain visible always
+        const btnLogout = document.getElementById('btn-fund-logout');
+        if (btnLogout) {
+            btnLogout.style.display = this.fundManager.canEdit() ? '' : 'none';
+        }
     }
 
     // ==========================================
@@ -602,37 +609,26 @@ class FundUI {
             const canEdit = this.fundManager.canEdit();
             const canCollect = this.fundManager.canCollectMoney();
 
-            let actionButtons = '';
-            if (canEdit || canCollect) {
-                actionButtons = `
-                    <div class="table-actions">
-                        ${v.status === 'unpaid' ? `
-                            <button class="btn-action btn-action-pay btn-mark-paid" data-id="${v.id}" title="Thu tiền / Đánh dấu đã nộp">
-                                <i class="fa-solid fa-money-bill-wave"></i> Thu tiền
-                            </button>
-                        ` : ''}
-                        ${v.status === 'paid' ? `
-                            <button class="btn-action btn-action-receipt btn-view-receipt" data-id="${v.id}" title="Xem & in phiếu biên nhận">
-                                <i class="fa-solid fa-receipt"></i> Phiếu thu
-                            </button>
-                        ` : ''}
-                        ${canEdit ? `
-                            <button class="btn-action btn-action-edit btn-edit-violation" data-id="${v.id}" title="Chỉnh sửa">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn-action btn-action-danger btn-delete-violation" data-id="${v.id}" title="Xóa">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        ` : ''}
-                    </div>
-                `;
-            } else {
-                actionButtons = v.status === 'paid' ? `
-                    <button class="btn-action btn-action-receipt btn-view-receipt" data-id="${v.id}" title="Xem phiếu biên nhận">
-                        <i class="fa-solid fa-receipt"></i> Phiếu thu
+            const actionButtons = `
+                <div class="table-actions">
+                    ${v.status === 'unpaid' ? `
+                        <button class="btn-action btn-action-pay btn-mark-paid" data-id="${v.id}" title="Thu tiền / Đánh dấu đã nộp">
+                            <i class="fa-solid fa-money-bill-wave"></i> Thu tiền
+                        </button>
+                    ` : ''}
+                    ${v.status === 'paid' ? `
+                        <button class="btn-action btn-action-receipt btn-view-receipt" data-id="${v.id}" title="Xem & in phiếu biên nhận">
+                            <i class="fa-solid fa-receipt"></i> Phiếu thu
+                        </button>
+                    ` : ''}
+                    <button class="btn-action btn-action-edit btn-edit-violation" data-id="${v.id}" title="Chỉnh sửa">
+                        <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                ` : '<span class="text-muted">–</span>';
-            }
+                    <button class="btn-action btn-action-danger btn-delete-violation" data-id="${v.id}" title="Xóa">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
 
             html += `
                 <tr data-id="${v.id}">
@@ -680,6 +676,7 @@ class FundUI {
         // Mark Paid quick button
         document.querySelectorAll('.btn-mark-paid').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (!this.fundManager.canEdit()) return;
                 const id = e.currentTarget.getAttribute('data-id');
                 const v = this.fundManager.getViolation(id);
                 if (v) {
@@ -702,6 +699,7 @@ class FundUI {
         // Edit Violation
         document.querySelectorAll('.btn-edit-violation').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (!this.fundManager.canEdit()) return;
                 const id = e.currentTarget.getAttribute('data-id');
                 this.openEditViolationModal(id);
             });
@@ -710,6 +708,7 @@ class FundUI {
         // Delete Violation
         document.querySelectorAll('.btn-delete-violation').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (!this.fundManager.canEdit()) return;
                 const id = e.currentTarget.getAttribute('data-id');
                 if (confirm('Bạn có chắc chắn muốn xóa bản ghi vi phạm này?')) {
                     this.fundManager.deleteViolation(id);
@@ -834,21 +833,19 @@ class FundUI {
         // Fill action buttons in modal
         const payBtn = document.getElementById('btn-ledger-pay');
         if (payBtn) {
-            if (summary.remainingAmount > 0 && this.fundManager.canCollectMoney()) {
-                payBtn.style.display = 'inline-flex';
-                payBtn.onclick = () => {
-                    modal.classList.remove('show');
-                    this.openPayDebtModal(studentId, summary.remainingAmount);
-                };
-            } else {
-                payBtn.style.display = 'none';
-            }
+            payBtn.style.display = summary.remainingAmount > 0 ? 'inline-flex' : 'none';
+            payBtn.onclick = () => {
+                if (!this.fundManager.canEdit()) return;
+                modal.classList.remove('show');
+                this.openPayDebtModal(studentId, summary.remainingAmount);
+            };
         }
 
         const addVioBtn = document.getElementById('btn-ledger-add-vio');
         if (addVioBtn) {
-            addVioBtn.style.display = this.fundManager.canRecordViolation() ? 'inline-flex' : 'none';
+            addVioBtn.style.display = 'inline-flex';
             addVioBtn.onclick = () => {
+                if (!this.fundManager.canEdit()) return;
                 modal.classList.remove('show');
                 this.openAddViolationModal(studentId);
             };
@@ -923,11 +920,9 @@ class FundUI {
                             <b class="debt-value">${this.fundManager.formatCurrency(d.remainingAmount)}</b>
                         </div>
                         <div class="debt-action">
-                            ${this.fundManager.canCollectMoney() ? `
-                                <button class="btn btn-primary btn-sm btn-collect-debt" data-student-id="${d.student.id}" data-amount="${d.remainingAmount}">
-                                    <i class="fa-solid fa-check-circle"></i> Đánh dấu đã nộp
-                                </button>
-                            ` : '<span class="badge badge-unpaid">Chưa hoàn thành</span>'}
+                            <button class="btn btn-primary btn-sm btn-collect-debt" data-student-id="${d.student.id}" data-amount="${d.remainingAmount}">
+                                <i class="fa-solid fa-check-circle"></i> Đánh dấu đã nộp
+                            </button>
                         </div>
                     </div>
                 `;
@@ -936,6 +931,7 @@ class FundUI {
 
             debtListContainer.querySelectorAll('.btn-collect-debt').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    if (!this.fundManager.canEdit()) return;
                     const stId = e.currentTarget.getAttribute('data-student-id');
                     const amount = e.currentTarget.getAttribute('data-amount');
                     this.openPayDebtModal(stId, amount);
@@ -1009,16 +1005,14 @@ class FundUI {
                     <td><span class="badge badge-category">${r.category || 'Nề nếp'}</span></td>
                     <td><b class="text-amount">${this.fundManager.formatCurrency(r.amount)}</b></td>
                     <td>
-                        ${this.fundManager.canEditRules() ? `
-                            <div class="table-actions">
-                                <button class="btn-action btn-action-edit btn-edit-rule" data-id="${r.id}" title="Chỉnh sửa mức phạt">
-                                    <i class="fa-solid fa-pen"></i> Sửa
-                                </button>
-                                <button class="btn-action btn-action-danger btn-delete-rule" data-id="${r.id}" title="Xóa">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        ` : '<span class="text-muted">–</span>'}
+                        <div class="table-actions">
+                            <button class="btn-action btn-action-edit btn-edit-rule" data-id="${r.id}" title="Chỉnh sửa mức phạt">
+                                <i class="fa-solid fa-pen"></i> Sửa
+                            </button>
+                            <button class="btn-action btn-action-danger btn-delete-rule" data-id="${r.id}" title="Xóa">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -1027,6 +1021,7 @@ class FundUI {
 
         tbody.querySelectorAll('.btn-edit-rule').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (!this.fundManager.canEdit()) return;
                 const id = e.currentTarget.getAttribute('data-id');
                 this.openEditRuleModal(id);
             });
@@ -1034,6 +1029,7 @@ class FundUI {
 
         tbody.querySelectorAll('.btn-delete-rule').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (!this.fundManager.canEdit()) return;
                 const id = e.currentTarget.getAttribute('data-id');
                 if (confirm('Bạn có chắc muốn xóa loại mức phạt này?')) {
                     this.fundManager.deleteRule(id);
@@ -1105,6 +1101,7 @@ class FundUI {
         const btnOpenAddVio = document.getElementById('btn-open-add-violation');
         if (btnOpenAddVio) {
             btnOpenAddVio.addEventListener('click', () => {
+                if (!this.fundManager.canEdit()) return;
                 this.openAddViolationModal();
             });
         }
@@ -1140,6 +1137,7 @@ class FundUI {
         const btnOpenAddRule = document.getElementById('btn-open-add-rule');
         if (btnOpenAddRule) {
             btnOpenAddRule.addEventListener('click', () => {
+                if (!this.fundManager.canEdit()) return;
                 this.openAddRuleModal();
             });
         }
@@ -1180,10 +1178,7 @@ class FundUI {
         const btnClearFund = document.getElementById('btn-clear-fund-data');
         if (btnClearFund) {
             btnClearFund.addEventListener('click', () => {
-                if (!this.fundManager.canEdit()) {
-                    alert('Bạn cần đăng nhập quyền Admin để thực hiện thao tác này!');
-                    return;
-                }
+                if (!this.fundManager.canEdit()) return;
                 const confirmClear = confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA TOÀN BỘ vi phạm & giao dịch quỹ về 0đ để bắt đầu năm học mới 2026-2027?\n\n(Danh sách học sinh và Bảng quy định mức phạt vẫn được giữ nguyên).');
                 if (confirmClear) {
                     this.fundManager.clearAllFundData();
@@ -1196,10 +1191,7 @@ class FundUI {
         const btnRestoreFund = document.getElementById('btn-restore-fund-data');
         if (btnRestoreFund) {
             btnRestoreFund.addEventListener('click', () => {
-                if (!this.fundManager.canEdit()) {
-                    alert('Bạn cần đăng nhập quyền Quản trị viên để thực hiện thao tác này!');
-                    return;
-                }
+                if (!this.fundManager.canEdit()) return;
                 if (confirm('Khôi phục lại dữ liệu vi phạm mẫu thử nghiệm ban đầu?')) {
                     this.fundManager.restoreSampleData();
                     this.renderAll();
@@ -1212,10 +1204,7 @@ class FundUI {
         const btnClearAudit = document.getElementById('btn-clear-audit-logs');
         if (btnClearAudit) {
             btnClearAudit.addEventListener('click', () => {
-                if (!this.fundManager.canEdit()) {
-                    alert('Bạn cần đăng nhập quyền Quản trị viên để thực hiện thao tác này!');
-                    return;
-                }
+                if (!this.fundManager.canEdit()) return;
                 if (confirm('Bạn có chắc chắn muốn XÓA TOÀN BỘ nhật ký hoạt động không?')) {
                     this.fundManager.clearAuditLogs();
                     this.renderAuditLogs();

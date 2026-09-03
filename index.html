@@ -102,7 +102,7 @@
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" id="search-input" placeholder="Tìm kiếm học sinh...">
                     </div>
-                    <div class="action-buttons admin-only">
+                    <div class="action-buttons">
                         <button id="btn-add-student" class="btn btn-sm btn-outline"><i class="fa-solid fa-plus"></i> Thêm</button>
                         <button id="btn-import-bulk" class="btn btn-sm btn-outline"><i class="fa-solid fa-file-import"></i> Nhập DS</button>
                     </div>
@@ -133,7 +133,7 @@
                             <i class="fa-solid fa-magnifying-glass"></i>
                             <input type="text" id="student-info-search" placeholder="Tìm theo tên, ngày sinh, SĐT...">
                         </div>
-                        <button id="btn-add-student-info" class="btn btn-primary admin-only"><i class="fa-solid fa-plus"></i> Thêm Học Sinh</button>
+                        <button id="btn-add-student-info" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm Học Sinh</button>
                     </div>
                 </header>
                 <div class="student-info-content">
@@ -171,7 +171,7 @@
                         <button id="btn-fund-logout" class="btn btn-sm btn-outline admin-only" title="Đăng xuất quyền chỉnh sửa">
                             <i class="fa-solid fa-lock"></i> Đăng xuất
                         </button>
-                        <button id="btn-open-add-violation" class="btn btn-primary can-record-vio">
+                        <button id="btn-open-add-violation" class="btn btn-primary">
                             <i class="fa-solid fa-plus-circle"></i> Ghi nhận vi phạm
                         </button>
                     </div>
@@ -464,7 +464,7 @@
                                     <h3 style="font-size: 1rem; font-weight: 700; color: #1E293B;"><i class="fa-solid fa-gavel text-primary"></i> Bảng Quy Định Mức Phạt Lớp Học</h3>
                                 </div>
                                 <div class="toolbar-right">
-                                    <button id="btn-open-add-rule" class="btn btn-primary btn-sm admin-only">
+                                    <button id="btn-open-add-rule" class="btn btn-primary btn-sm">
                                         <i class="fa-solid fa-plus"></i> Thêm mức phạt mới
                                     </button>
                                 </div>
@@ -477,7 +477,7 @@
                                             <th>Tên loại lỗi vi phạm</th>
                                             <th>Nhóm danh mục</th>
                                             <th>Mức phạt mặc định</th>
-                                            <th class="admin-only">Thao tác</th>
+                                            <th>Thao tác</th>
                                         </tr>
                                     </thead>
                                     <tbody id="rules-tbody">
@@ -488,7 +488,7 @@
                         </div>
 
                         <!-- Panel Quản Lý Dữ Liệu Năm Học Mới -->
-                        <div class="panel-card admin-only" style="margin-top: 24px; border-left: 4px solid #4F46E5;">
+                        <div class="panel-card" style="margin-top: 24px; border-left: 4px solid #4F46E5;">
                             <div class="panel-header">
                                 <h3><i class="fa-solid fa-sliders text-primary"></i> Quản Lý Dữ Liệu & Khởi Tạo Năm Học Mới</h3>
                                 <span style="font-size: 0.8rem; color: #64748B;">Chỉ quản trị viên đã đăng nhập (tk: admin) mới có quyền thao tác</span>
@@ -519,7 +519,7 @@
                                     <h3><i class="fa-solid fa-shield-halved text-primary"></i> Nhật Ký Thay Đổi & Lưu Vết Dữ Liệu</h3>
                                     <span style="font-size: 0.8rem; color: #64748B;">Đảm bảo tính minh bạch tuyệt đối khi nhiều người cùng quản lý</span>
                                 </div>
-                                <button id="btn-clear-audit-logs" class="btn btn-danger btn-sm admin-only" title="Xóa toàn bộ nhật ký">
+                                <button id="btn-clear-audit-logs" class="btn btn-danger btn-sm" title="Xóa toàn bộ nhật ký">
                                     <i class="fa-solid fa-trash"></i> Xóa toàn bộ nhật ký
                                 </button>
                             </div>
